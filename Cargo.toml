@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "mg-core",
+    "connect-four-ai",
+]
