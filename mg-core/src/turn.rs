@@ -1,4 +1,4 @@
 
-pub enum Turn {
-    ConnectFour(usize),
+pub enum Action {
+    ConnectFour(usize, String),
 }

@@ -2,59 +2,46 @@
 mod connect_four_test {
 
     use mg_core::board::Board;
-    use mg_core::case::Case; use mg_core::error::Error;
+    use mg_core::case::Case;
+    use mg_core::error::Error;
     use mg_core::piece::{Piece, Rank};
-    use mg_core::turn::Turn;
+    use mg_core::turn::Action;
 
     #[test]
     fn should_display_case() {
-        let piece = Piece::ConnectFour(String::from("Red"), Rank::ConnectFour(true));
+        let piece = Piece::ConnectFour(String::from("Red"), Rank::ConnectFour);
         let case = Case::ConnectFour(piece);
 
-        assert_eq!(String::from("Red1"), case.display());
+        assert_eq!(String::from("Red"), case.display());
     }
+
+    const EMPTY: &str = "     ";
+    const RED: &str = " Red ";
+    const YELLOW: &str = " Yel ";
 
     #[test]
     fn should_display_board() {
-        let empty_row = vec![Case::Empty, Case::Empty];
-        let mut board = Board::ConnectFour(vec![empty_row.clone(), empty_row]);
-        board
-            .place(
-                Case::ConnectFour(Piece::ConnectFour(
-                    String::from("Red"),
-                    Rank::ConnectFour(true),
-                )),
-                0,
-                0,
-            )
-            .unwrap();
-        board.place(Case::Empty, 0, 1).unwrap();
+        let empty_row = vec![Case::Empty, Case::Empty, Case::Empty];
+        let mut board = Board::ConnectFour(vec![empty_row.clone(), empty_row.clone(), empty_row]);
 
         board
-            .place(
-                Case::ConnectFour(Piece::ConnectFour(
-                    String::from("Yel"),
-                    Rank::ConnectFour(false),
-                )),
-                1,
-                0,
-            )
+            .play(Action::ConnectFour(0, String::from("Yel")))
             .unwrap();
         board
-            .place(
-                Case::ConnectFour(Piece::ConnectFour(
-                    String::from("Red"),
-                    Rank::ConnectFour(true),
-                )),
-                1,
-                1,
-            )
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
+        board
+            .play(Action::ConnectFour(1, String::from("Yel")))
+            .unwrap();
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
             .unwrap();
 
-        assert_eq!(
-            String::from("|      | Red1 |\n| Red1 | Yel0 |\n"),
-            board.display()
+        let expected = format!(
+            "|{}|{}|{}|\n|{}|{}|{}|\n|{}|{}|{}|\n",
+            RED, EMPTY, EMPTY, RED, EMPTY, EMPTY, YELLOW, YELLOW, EMPTY
         );
+        assert_eq!(expected, board.display());
     }
 
     fn create_board_2x2() -> Result<Board, Error> {
@@ -66,7 +53,10 @@ mod connect_four_test {
     fn should_authorize_play() {
         let mut board = create_board_2x2().unwrap();
 
-        if board.play(Turn::ConnectFour(0)).is_ok() {
+        if board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .is_ok()
+        {
             assert!(true);
         } else {
             assert!(false);
@@ -77,7 +67,7 @@ mod connect_four_test {
     fn should_not_authorize_play() {
         let mut board = create_board_2x2().unwrap();
 
-        if let Err(_) = board.play(Turn::ConnectFour(10)) {
+        if let Err(_) = board.play(Action::ConnectFour(10, String::from("Red"))) {
             assert!(true);
         } else {
             assert!(false);
@@ -87,7 +77,9 @@ mod connect_four_test {
     #[test]
     fn should_drop_piece_at_the_bottom() {
         let mut board = create_board_2x2().unwrap();
-        board.play(Turn::ConnectFour(0)).unwrap();
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
         if let Case::Empty = board.at((0, 0)) {
             assert!(false);
         } else if let Case::ConnectFour(_) = board.at((0, 1)) {
@@ -100,9 +92,15 @@ mod connect_four_test {
     #[test]
     fn should_not_drop_piece_on_top() {
         let mut board = create_board_2x2().unwrap();
-        board.play(Turn::ConnectFour(0)).unwrap();
-        board.play(Turn::ConnectFour(0)).unwrap();
-        if let Err(_) = board.play(Turn::ConnectFour(0)) {
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
+        eprintln!("{}", board.display());
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
+        eprintln!("{}", board.display());
+        if let Err(_) = board.play(Action::ConnectFour(0, String::from("Yel"))) {
             assert!(true);
         } else {
             assert!(false);
@@ -112,8 +110,13 @@ mod connect_four_test {
     #[test]
     fn should_drop_piece_on_top_of_the_other() {
         let mut board = create_board_3x3().unwrap();
-        board.play(Turn::ConnectFour(0)).unwrap();
-        board.play(Turn::ConnectFour(0)).unwrap();
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
+        board
+            .play(Action::ConnectFour(0, String::from("Red")))
+            .unwrap();
+
         if let Case::Empty = board.at((0, 0)) {
             assert!(false);
         } else if let Case::Empty = board.at((0, 1)) {

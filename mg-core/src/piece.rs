@@ -1,18 +1,18 @@
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Piece {
     ConnectFour(String, Rank),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Rank {
-    ConnectFour(bool),
+    ConnectFour,
 }
 
 impl Piece {
     pub fn display(&self) -> String {
         match self {
-            Piece::ConnectFour(color, rank) => format!("{}{}", color, rank.get()),
+            Piece::ConnectFour(color, _) => format!("{}", color),
         }
     }
     
@@ -27,7 +27,7 @@ impl Piece {
 impl Rank {
     pub fn get(&self) -> usize  {
         match self {
-            Rank::ConnectFour(value) => value.clone() as usize,
+            Rank::ConnectFour => 0,
         }
     }
 }
