@@ -1,7 +1,7 @@
 use crate::case::Case;
 use crate::error::Error;
-use crate::piece::{Piece, Rank};
 use crate::turn::Action;
+use crate::connect_four;
 
 #[derive(Debug, Clone)]
 pub enum Board {
@@ -14,7 +14,7 @@ impl Board {
     pub fn play(&mut self, action: Action) -> Result<(), Error> {
         match (&self, action) {
             (Board::ConnectFour(_), Action::ConnectFour(column_index, color)) => {
-                play_at_connect_four(column_index, color, self)
+                connect_four::play_at_connect_four(column_index, color, self)
             }
         }
     }
@@ -26,25 +26,12 @@ impl Board {
     }
 
     pub fn display(&self) -> String {
-        match self {
-            Board::ConnectFour(board) => {
-                let mut display = String::new();
-                let board = board.to_owned();
-                let l = board.len();
-                for y in (0..l).rev() {
-                    display.push('|');
-                    for x in 0..l {
-                        let case = self.at((x, y));
-                        display.push_str(format!(" {} |", case.display()).as_str());
-                    }
-                    display.push('\n');
-                }
-                display
-            }
+        match &self {
+            Board::ConnectFour(_) => connect_four::display(self),
         }
     }
 
-    fn place(&mut self, case: Case, x: usize, y: usize) -> Result<(), Error> {
+    pub fn place(&mut self, case: Case, x: usize, y: usize) -> Result<(), Error> {
         match self {
             Board::ConnectFour(board) => {
                 board[x][y] = case;
@@ -54,36 +41,3 @@ impl Board {
     }
 }
 
-fn play_at_connect_four(
-    column_index: usize,
-    color: String,
-    board: &mut Board,
-) -> Result<(), Error> {
-    let Board::ConnectFour(cases) = board;
-    if let Some(column) = cases.get(column_index) {
-        if let Some(row_index) = index_of_new_pon(&column) {
-            board.place(
-                Case::ConnectFour(Piece::ConnectFour(color, Rank::ConnectFour)),
-                column_index,
-                row_index,
-            )?;
-            Ok(())
-        } else {
-            Err(Error::IllegalMove(String::from("Column is full")))
-        }
-    } else {
-        Err(Error::IllegalMove(format!(
-            "Column {} is out of bounds",
-            column_index
-        )))
-    }
-}
-
-fn index_of_new_pon(column: &[Case]) -> Option<usize> {
-    for (i, case) in column.iter().enumerate() {
-        if &Case::Empty == case {
-            return Some(i);
-        }
-    }
-    None
-}
