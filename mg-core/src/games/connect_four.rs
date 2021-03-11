@@ -29,9 +29,9 @@ pub fn play_at_connect_four(
 }
 
 pub fn display(board: &Board) -> String {
-    let mut message = String::new();
     let Board::ConnectFour(cases) = board;
     let cases_length = cases.len();
+    let mut message = String::new();
     for y in (0..cases_length).rev() {
         message.push('|');
         for x in 0..cases_length {
@@ -51,3 +51,4 @@ fn index_of_new_pon(column: &[Case]) -> Option<usize> {
     }
     None
 }
+

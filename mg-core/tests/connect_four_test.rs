@@ -4,8 +4,29 @@ mod connect_four_test {
     use mg_core::board::Board;
     use mg_core::case::Case;
     use mg_core::error::Error;
+    use mg_core::operator::Operator;
     use mg_core::piece::{Piece, Rank};
-    use mg_core::turn::Action;
+    use mg_core::player::Action;
+    use mg_core::player::Player;
+
+    struct TestPlayer {
+        name: String,
+        color: String,
+    }
+
+    impl Player for TestPlayer {
+        fn ask_next_move(&self, _board: &Board) -> Action {
+            Action::ConnectFour(0, String::from("Red"))
+        }
+
+        fn get_color(&self) -> &str {
+            self.color.as_str()
+        }
+
+        fn get_name(&self) -> &str {
+            self.name.as_str()
+        }
+    }
 
     #[test]
     fn should_display_case() {
@@ -135,5 +156,41 @@ mod connect_four_test {
             empty_row.clone(),
             empty_row,
         ]))
+    }
+
+    #[test]
+    fn should_play_one_turn() {
+        let board = create_board_3x3().unwrap();
+        let player = TestPlayer {
+            color: String::from("Red"),
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: String::from("Yel"),
+            name: String::from("Cassiopée"),
+        };
+        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+
+        if let Err(_) = operator.play() {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn should_not_play() {
+        let board = create_board_3x3().unwrap();
+        let player = TestPlayer {
+            color: String::from("Yel"),
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: String::from("Red"),
+            name: String::from("Cassiopée"),
+        };
+        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+
+        if let Err(e) = operator.play() {
+            assert_eq!(Error::IllegalMove(String::from("This move is illegal")), e);
+        }
     }
 }

@@ -1,7 +1,7 @@
 use mg_core::board::Board;
 use mg_core::case::Case;
 use mg_core::error::Error;
-use mg_core::turn::Action;
+use mg_core::player::Action;
 
 fn main() {
     let mut board = create_board_3x3().unwrap();
