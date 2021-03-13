@@ -2,10 +2,27 @@ use crate::board::Board;
 use crate::case::Case;
 use crate::error::Error;
 use crate::piece::{Piece, Rank};
+use std::fmt;
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum ConnectFourColor {
+    Red,
+    Yellow,
+}
+
+impl fmt::Display for ConnectFourColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ConnectFourColor::Red => "Red",
+            ConnectFourColor::Yellow => "Yel",
+        };
+        write!(f, "{}", s)
+    }
+}
 
 pub fn play_at_connect_four(
     column_index: usize,
-    color: String,
+    color: ConnectFourColor,
     board: &mut Board,
 ) -> Result<(), Error> {
     let Board::ConnectFour(cases) = board;

@@ -4,6 +4,7 @@ mod connect_four_test {
     use mg_core::board::Board;
     use mg_core::case::Case;
     use mg_core::error::Error;
+    use mg_core::games::connect_four::ConnectFourColor;
     use mg_core::operator::Operator;
     use mg_core::piece::{Piece, Rank};
     use mg_core::player::Action;
@@ -16,7 +17,7 @@ mod connect_four_test {
 
     impl Player for TestPlayer {
         fn ask_next_move(&self, _board: &Board) -> Action {
-            Action::ConnectFour(0, String::from("Red"))
+            Action::ConnectFour(0, ConnectFourColor::Red)
         }
 
         fn get_color(&self) -> &str {
@@ -30,7 +31,7 @@ mod connect_four_test {
 
     #[test]
     fn should_display_case() {
-        let piece = Piece::ConnectFour(String::from("Red"), Rank::ConnectFour);
+        let piece = Piece::ConnectFour(ConnectFourColor::Red, Rank::ConnectFour);
         let case = Case::ConnectFour(piece);
 
         assert_eq!(String::from("Red"), case.display());
@@ -46,16 +47,16 @@ mod connect_four_test {
         let mut board = Board::ConnectFour(vec![empty_row.clone(), empty_row.clone(), empty_row]);
 
         board
-            .play(Action::ConnectFour(0, String::from("Yel")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Yellow))
             .unwrap();
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
         board
-            .play(Action::ConnectFour(1, String::from("Yel")))
+            .play(Action::ConnectFour(1, ConnectFourColor::Yellow))
             .unwrap();
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
 
         let expected = format!(
@@ -75,7 +76,7 @@ mod connect_four_test {
         let mut board = create_board_2x2().unwrap();
 
         if board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .is_ok()
         {
             assert!(true);
@@ -88,7 +89,7 @@ mod connect_four_test {
     fn should_not_authorize_play() {
         let mut board = create_board_2x2().unwrap();
 
-        if let Err(_) = board.play(Action::ConnectFour(10, String::from("Red"))) {
+        if let Err(_) = board.play(Action::ConnectFour(10, ConnectFourColor::Red)) {
             assert!(true);
         } else {
             assert!(false);
@@ -99,7 +100,7 @@ mod connect_four_test {
     fn should_drop_piece_at_the_bottom() {
         let mut board = create_board_2x2().unwrap();
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
         if let Case::Empty = board.at((0, 0)) {
             assert!(false);
@@ -113,15 +114,16 @@ mod connect_four_test {
     #[test]
     fn should_not_drop_piece_on_top() {
         let mut board = create_board_2x2().unwrap();
+
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
         eprintln!("{}", board.display());
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
         eprintln!("{}", board.display());
-        if let Err(_) = board.play(Action::ConnectFour(0, String::from("Yel"))) {
+        if let Err(_) = board.play(Action::ConnectFour(0, ConnectFourColor::Yellow)) {
             assert!(true);
         } else {
             assert!(false);
@@ -132,10 +134,10 @@ mod connect_four_test {
     fn should_drop_piece_on_top_of_the_other() {
         let mut board = create_board_3x3().unwrap();
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
         board
-            .play(Action::ConnectFour(0, String::from("Red")))
+            .play(Action::ConnectFour(0, ConnectFourColor::Red))
             .unwrap();
 
         if let Case::Empty = board.at((0, 0)) {

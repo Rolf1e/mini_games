@@ -25,7 +25,6 @@ impl Operator {
         self.board.play(action)?;
         Ok(self.switch_turn())
     }
-        
     
     fn ask_player(&self) -> Action {
         if self.turn {

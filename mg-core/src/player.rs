@@ -1,4 +1,5 @@
 use crate::board::Board;
+use crate::games::connect_four::ConnectFourColor;
 
 pub trait Player {
     fn ask_next_move(&self, board: &Board) -> Action;
@@ -9,5 +10,9 @@ pub trait Player {
 }
 
 pub enum Action {
-    ConnectFour(usize, String),
+    ConnectFour(usize, ConnectFourColor),
+}
+
+pub enum Color {
+    ConnectFour(ConnectFourColor),
 }

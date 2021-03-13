@@ -1,7 +1,9 @@
+use crate::games::connect_four::ConnectFourColor;
+
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Piece {
-    ConnectFour(String, Rank),
+    ConnectFour(ConnectFourColor, Rank),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -12,7 +14,7 @@ pub enum Rank {
 impl Piece {
     pub fn display(&self) -> String {
         match self {
-            Piece::ConnectFour(color, _) => format!("{}", color),
+            Piece::ConnectFour(color, _) => color.to_string(),
         }
     }
     
