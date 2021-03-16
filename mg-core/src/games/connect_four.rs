@@ -2,22 +2,20 @@ use crate::board::Board;
 use crate::case::Case;
 use crate::error::Error;
 use crate::piece::{Piece, Rank};
+use crate::state::State;
 use std::fmt;
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum ConnectFourState {
+    Red,
+    Yellow,
+    Over(Option<ConnectFourColor>),
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ConnectFourColor {
     Red,
     Yellow,
-}
-
-impl fmt::Display for ConnectFourColor {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
-            ConnectFourColor::Red => "Red",
-            ConnectFourColor::Yellow => "Yel",
-        };
-        write!(f, "{}", s)
-    }
 }
 
 pub fn play_at_connect_four(
@@ -60,6 +58,10 @@ pub fn display(board: &Board) -> String {
     message
 }
 
+pub fn check_is_over() -> Option<ConnectFourColor> {
+    todo!()
+}
+
 fn index_of_new_pon(column: &[Case]) -> Option<usize> {
     for (i, case) in column.iter().enumerate() {
         if &Case::Empty == case {
@@ -67,5 +69,39 @@ fn index_of_new_pon(column: &[Case]) -> Option<usize> {
         }
     }
     None
+}
+
+impl State for ConnectFourState {
+    fn next(&mut self) {
+        *self = match self {
+            ConnectFourState::Red => ConnectFourState::Yellow,
+            ConnectFourState::Yellow => ConnectFourState::Red,
+            ConnectFourState::Over(_) => ConnectFourState::Red,
+        };
+    }
+
+    fn message(&self) -> String {
+        match &self {
+            ConnectFourState::Red => String::from("Red is playing"),
+            ConnectFourState::Yellow => String::from("Yellow is playing"),
+            ConnectFourState::Over(color) => {
+                if let Some(color) = color {
+                    format!("Game is over, {} has win !", color)
+                } else {
+                    String::from("Not over yet")
+                }
+            }
+        }
+    }
+}
+
+impl fmt::Display for ConnectFourColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ConnectFourColor::Red => "Red",
+            ConnectFourColor::Yellow => "Yel",
+        };
+        write!(f, "{}", s)
+    }
 }
 

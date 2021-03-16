@@ -1,5 +1,6 @@
-pub trait State: PartialEq + Eq + Sized {
-    //fn next(&self) -> &dyn State;
+pub trait State {
+    fn next(&mut self);
     
     fn message(&self) -> String;
 }
+

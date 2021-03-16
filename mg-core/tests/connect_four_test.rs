@@ -4,24 +4,28 @@ mod connect_four_test {
     use mg_core::board::Board;
     use mg_core::case::Case;
     use mg_core::error::Error;
-    use mg_core::games::connect_four::ConnectFourColor;
+    use mg_core::games::connect_four::{ConnectFourColor, ConnectFourState};
     use mg_core::operator::Operator;
     use mg_core::piece::{Piece, Rank};
     use mg_core::player::Action;
     use mg_core::player::Player;
+    use mg_core::state::State;
 
     struct TestPlayer {
         name: String,
-        color: String,
+        color: ConnectFourColor,
     }
 
     impl Player for TestPlayer {
         fn ask_next_move(&self, _board: &Board) -> Action {
-            Action::ConnectFour(0, ConnectFourColor::Red)
+            match &self.color {
+                ConnectFourColor::Red => Action::ConnectFour(0, ConnectFourColor::Red),
+                ConnectFourColor::Yellow => Action::ConnectFour(0, ConnectFourColor::Yellow)
+            }
         }
 
         fn get_color(&self) -> &str {
-            self.color.as_str()
+            todo!("Don't think this is really useful for test case")
         }
 
         fn get_name(&self) -> &str {
@@ -162,16 +166,7 @@ mod connect_four_test {
 
     #[test]
     fn should_play_one_turn() {
-        let board = create_board_3x3().unwrap();
-        let player = TestPlayer {
-            color: String::from("Red"),
-            name: String::from("Tigran"),
-        };
-        let player_2 = TestPlayer {
-            color: String::from("Yel"),
-            name: String::from("Cassiopée"),
-        };
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+        let mut operator = create_3x3_game();
 
         if let Err(_) = operator.play() {
             assert!(false);
@@ -180,19 +175,64 @@ mod connect_four_test {
 
     #[test]
     fn should_not_play() {
-        let board = create_board_3x3().unwrap();
-        let player = TestPlayer {
-            color: String::from("Yel"),
-            name: String::from("Tigran"),
-        };
-        let player_2 = TestPlayer {
-            color: String::from("Red"),
-            name: String::from("Cassiopée"),
-        };
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+        let mut operator = create_3x3_game();
 
         if let Err(e) = operator.play() {
             assert_eq!(Error::IllegalMove(String::from("This move is illegal")), e);
         }
+    }
+
+    fn create_3x3_game() -> Operator {
+        let board = create_board_3x3().unwrap();
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        Operator::new(board, Box::new(player), Box::new(player_2))
+    }
+
+    fn create_2x2_game() -> Operator {
+        let board = create_board_2x2().unwrap();
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        Operator::new(board, Box::new(player), Box::new(player_2))
+    }
+
+    #[test]
+    fn should_let_play() {
+        let mut operator = create_3x3_game();
+        if let Err(_) = operator.play() {
+            assert!(false);
+        }
+
+        let state = operator.state();
+        let expected: &dyn State = &ConnectFourState::Yellow;
+        assert_eq!(expected.message(), state.message());
+    }
+
+    #[test]
+    fn should_stop_playing() {
+        let mut operator = create_2x2_game();
+        if let Err(_) = operator.play() {
+            assert!(false);
+        }
+        if let Err(_) = operator.play() {
+            assert!(false);
+        }
+
+        let state = operator.state();
+        let expected: &dyn State = &ConnectFourState::Over(None);
+        assert_eq!(expected.message(), state.message());
+
     }
 }
