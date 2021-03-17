@@ -1,6 +1,5 @@
 use crate::games::connect_four::ConnectFourColor;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Piece {
     ConnectFour(ConnectFourColor, Rank),
@@ -23,8 +22,8 @@ impl Piece {
             Piece::ConnectFour(_, rank) => rank,
         }
     }
-}
 
+}
 
 impl Rank {
     pub fn get(&self) -> usize  {

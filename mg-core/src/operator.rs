@@ -28,7 +28,8 @@ impl Operator {
         Ok(self.change_state())
     }
 
-    pub fn state(&self) -> &dyn State {
+    pub fn state(&mut self) -> &dyn State {
+        self.state.next(&self.board);
         &self.state
     }
 
@@ -43,7 +44,7 @@ impl Operator {
     }
 
     fn change_state(&mut self) {
-        self.state.next();
+        self.state.next(&self.board);
     }
 }
 

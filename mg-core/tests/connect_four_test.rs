@@ -11,16 +11,50 @@ mod connect_four_test {
     use mg_core::player::Player;
     use mg_core::state::State;
 
+    const EMPTY: &str = "     ";
+    const RED: &str = " Red ";
+    const YELLOW: &str = " Yel ";
+
+    const RED_CASE: Case =
+        Case::ConnectFour(Piece::ConnectFour(ConnectFourColor::Red, Rank::ConnectFour));
+    const YELLOW_CASE: Case = Case::ConnectFour(Piece::ConnectFour(
+        ConnectFourColor::Yellow,
+        Rank::ConnectFour,
+    ));
+
     struct TestPlayer {
         name: String,
         color: ConnectFourColor,
+    }
+
+    struct TestPlayer2 {
+        color: ConnectFourColor,
+    }
+
+    impl Player for TestPlayer2 {
+        fn ask_next_move(&self, _board: &Board) -> Action {
+            match &self.color {
+                ConnectFourColor::Red => Action::ConnectFour(0, ConnectFourColor::Red),
+                ConnectFourColor::Yellow => Action::ConnectFour(1, ConnectFourColor::Yellow),
+                ConnectFourColor::None => panic!(),
+            }
+        }
+
+        fn get_color(&self) -> &str {
+            todo!("Don't think this is really useful for test case")
+        }
+
+        fn get_name(&self) -> &str {
+            todo!("Don't think this is really useful for test case")
+        }
     }
 
     impl Player for TestPlayer {
         fn ask_next_move(&self, _board: &Board) -> Action {
             match &self.color {
                 ConnectFourColor::Red => Action::ConnectFour(0, ConnectFourColor::Red),
-                ConnectFourColor::Yellow => Action::ConnectFour(0, ConnectFourColor::Yellow)
+                ConnectFourColor::Yellow => Action::ConnectFour(0, ConnectFourColor::Yellow),
+                ConnectFourColor::None => panic!(),
             }
         }
 
@@ -33,6 +67,46 @@ mod connect_four_test {
         }
     }
 
+    fn create_board_3x3() -> Result<Board, Error> {
+        let empty_row = vec![Case::Empty, Case::Empty, Case::Empty];
+        Ok(Board::ConnectFour(vec![
+            empty_row.clone(),
+            empty_row.clone(),
+            empty_row,
+        ]))
+    }
+
+    fn create_2x2_game() -> Operator {
+        let board = create_board_2x2().unwrap();
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        Operator::new(board, Box::new(player), Box::new(player_2))
+    }
+
+    fn create_3x3_game() -> Operator {
+        let board = create_board_3x3().unwrap();
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        Operator::new(board, Box::new(player), Box::new(player_2))
+    }
+
+    fn create_board_2x2() -> Result<Board, Error> {
+        let empty_row = vec![Case::Empty, Case::Empty];
+        Ok(Board::ConnectFour(vec![empty_row.clone(), empty_row]))
+    }
+
     #[test]
     fn should_display_case() {
         let piece = Piece::ConnectFour(ConnectFourColor::Red, Rank::ConnectFour);
@@ -40,10 +114,6 @@ mod connect_four_test {
 
         assert_eq!(String::from("Red"), case.display());
     }
-
-    const EMPTY: &str = "     ";
-    const RED: &str = " Red ";
-    const YELLOW: &str = " Yel ";
 
     #[test]
     fn should_display_board() {
@@ -68,11 +138,6 @@ mod connect_four_test {
             RED, EMPTY, EMPTY, RED, EMPTY, EMPTY, YELLOW, YELLOW, EMPTY
         );
         assert_eq!(expected, board.display());
-    }
-
-    fn create_board_2x2() -> Result<Board, Error> {
-        let empty_row = vec![Case::Empty, Case::Empty];
-        Ok(Board::ConnectFour(vec![empty_row.clone(), empty_row]))
     }
 
     #[test]
@@ -155,15 +220,6 @@ mod connect_four_test {
         }
     }
 
-    fn create_board_3x3() -> Result<Board, Error> {
-        let empty_row = vec![Case::Empty, Case::Empty, Case::Empty];
-        Ok(Board::ConnectFour(vec![
-            empty_row.clone(),
-            empty_row.clone(),
-            empty_row,
-        ]))
-    }
-
     #[test]
     fn should_play_one_turn() {
         let mut operator = create_3x3_game();
@@ -182,32 +238,6 @@ mod connect_four_test {
         }
     }
 
-    fn create_3x3_game() -> Operator {
-        let board = create_board_3x3().unwrap();
-        let player = TestPlayer {
-            color: ConnectFourColor::Yellow,
-            name: String::from("Tigran"),
-        };
-        let player_2 = TestPlayer {
-            color: ConnectFourColor::Red,
-            name: String::from("Cassiopée"),
-        };
-        Operator::new(board, Box::new(player), Box::new(player_2))
-    }
-
-    fn create_2x2_game() -> Operator {
-        let board = create_board_2x2().unwrap();
-        let player = TestPlayer {
-            color: ConnectFourColor::Yellow,
-            name: String::from("Tigran"),
-        };
-        let player_2 = TestPlayer {
-            color: ConnectFourColor::Red,
-            name: String::from("Cassiopée"),
-        };
-        Operator::new(board, Box::new(player), Box::new(player_2))
-    }
-
     #[test]
     fn should_let_play() {
         let mut operator = create_3x3_game();
@@ -222,17 +252,96 @@ mod connect_four_test {
 
     #[test]
     fn should_stop_playing() {
-        let mut operator = create_2x2_game();
-        if let Err(_) = operator.play() {
-            assert!(false);
-        }
-        if let Err(_) = operator.play() {
-            assert!(false);
-        }
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
 
+        let board = Board::ConnectFour(vec![
+            vec![RED_CASE, YELLOW_CASE],
+            vec![RED_CASE, YELLOW_CASE],
+        ]);
+
+        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
         let state = operator.state();
+
         let expected: &dyn State = &ConnectFourState::Over(None);
         assert_eq!(expected.message(), state.message());
-
     }
+
+    #[test]
+    fn should_have_winner_row() {
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        let board = Board::ConnectFour(vec![
+            vec![RED_CASE, YELLOW_CASE, YELLOW_CASE, YELLOW_CASE],
+            vec![RED_CASE, YELLOW_CASE, Case::Empty, Case::Empty],
+            vec![RED_CASE, Case::Empty, Case::Empty, Case::Empty],
+            vec![RED_CASE, Case::Empty, Case::Empty, Case::Empty],
+        ]);
+
+        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+        let state = operator.state();
+
+        let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Red));
+        assert_eq!(expected.message(), state.message());
+    }
+
+    #[test]
+    fn should_have_winner_column() {
+        let player = TestPlayer {
+            color: ConnectFourColor::Yellow,
+            name: String::from("Tigran"),
+        };
+        let player_2 = TestPlayer {
+            color: ConnectFourColor::Red,
+            name: String::from("Cassiopée"),
+        };
+        let board = Board::ConnectFour(vec![
+            vec![RED_CASE, RED_CASE, RED_CASE, RED_CASE],
+            vec![YELLOW_CASE, YELLOW_CASE, Case::Empty, Case::Empty],
+            vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
+            vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
+        ]);
+
+        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
+        let state = operator.state();
+
+        let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Red));
+        assert_eq!(expected.message(), state.message());
+    }
+
+    // #[test]
+    // fn should_have_winner_diagonal() {
+        // let player = TestPlayer {
+            // color: ConnectFourColor::Yellow,
+            // name: String::from("Tigran"),
+        // };
+        // let player_2 = TestPlayer {
+            // color: ConnectFourColor::Red,
+            // name: String::from("Cassiopée"),
+        // };
+        // let board = Board::ConnectFour(vec![
+            // vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
+            // vec![RED_CASE, YELLOW_CASE, Case::Empty, Case::Empty],
+            // vec![YELLOW_CASE, RED_CASE, YELLOW_CASE, Case::Empty],
+            // vec![RED_CASE, RED_CASE, RED_CASE, YELLOW_CASE],
+        // ]);
+// 
+        // let operator = Operator::new(board, Box::new(player), Box::new(player_2));
+        // let state = operator.state();
+// 
+        // let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Yellow));
+        // assert_eq!(expected.message(), state.message());
+    // }
 }
