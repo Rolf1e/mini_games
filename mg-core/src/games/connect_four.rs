@@ -16,7 +16,7 @@ pub enum ConnectFourState {
 pub enum ConnectFourColor {
     Red,
     Yellow,
-    None,
+    Equality,
 }
 
 pub fn play_at_connect_four(
@@ -46,24 +46,32 @@ pub fn play_at_connect_four(
 
 /// To check game state
 pub fn check_is_over(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
-    if let Some(color) = check_by_row(board, pon) {
+    if let Some(color) = check_board_is_full(board) {
+        Some(color)
+    } else if let Some(color) = check_by_row(board, pon) {
         Some(color)
     } else if let Some(color) = check_by_column(board, pon) {
         Some(color)
     } else if let Some(color) = check_by_diagonal(board, pon) {
         Some(color)
-    } else if let Some(color) = check_board_is_full(board) {
-        Some(color)
-    } else {
+    } else  {
         None
     }
 }
 
 fn check_board_is_full(board: &Board) -> Option<ConnectFourColor> {
-    todo!()
+    let Board::ConnectFour(cases) = board;
+    let max_row = cases.len();
+    let max_column = cases[0].len() - 1;
+    for i in 0..max_row {
+        if Case::Empty == cases[i][max_column] {
+            return None;
+        }
+    }
+    Some(ConnectFourColor::Equality)
 }
 
-/// Row is Board[x][0]
+/// Row is Board[x][0] -> we fix 0
 fn check_by_row(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
     eprintln!("{}", board.display());
     let Board::ConnectFour(cases) = board;
@@ -82,7 +90,7 @@ fn check_by_row(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
     None
 }
 
-/// Column is Board[0][y] 
+/// Column is Board[0][y] -> we fix 0
 fn check_by_column(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
     let Board::ConnectFour(cases) = board;
     for column in cases {
@@ -101,15 +109,25 @@ fn check_by_diagonal(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
 fn check_line(cases: &[Case], pon: &i8) -> Option<ConnectFourColor> {
     let mut stack = 1;
 
-    let Piece::ConnectFour(color, _) = cases[0]
+    let case = &cases[0];
+    if &Case::Empty == case {
+        return None;
+    }
+    let Piece::ConnectFour(color, _) = case
         .get_content()
         .unwrap_or_else(|| panic!("Failed to get content from cases when check winner"));
+
     let mut color = color;
     for i in 1..cases.len() {
         if &stack == pon {
             return Some(color.clone());
         }
-        let Piece::ConnectFour(new_color, _) = cases[i]
+            
+        let case = &cases[i];
+        if &Case::Empty == case {
+            return None;
+        }
+        let Piece::ConnectFour(new_color, _) = case
             .get_content()
             .unwrap_or_else(|| panic!("Failed to get content from cases when check winner"));
         if new_color == color {
@@ -167,7 +185,7 @@ impl fmt::Display for ConnectFourColor {
         let s = match self {
             ConnectFourColor::Red => "Red",
             ConnectFourColor::Yellow => "Yel",
-            ConnectFourColor::None => "No",
+            ConnectFourColor::Equality => "NoO",
         };
         write!(f, "{}", s)
     }
