@@ -1,3 +1,4 @@
+use crate::games::connect_four::ConnectFourColor;
 use crate::piece::Piece;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

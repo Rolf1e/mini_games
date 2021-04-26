@@ -3,6 +3,7 @@ pub enum Error {
     WrongCaseType,
     IllegalMove(String),
     BadGame,
+    Infra(String),
 }
 
 impl Error {
@@ -11,6 +12,7 @@ impl Error {
             Error::WrongCaseType => String::from("This case type does not exist"),
             Error::IllegalMove(s) => s.to_owned(),
             Error::BadGame => String::from("Game does not exist"),
+            Error::Infra(e) => e.to_owned(),
         }
     }
 }

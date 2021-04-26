@@ -9,7 +9,7 @@ pub struct Operator {
     board: Board,
     player_1: Box<dyn Player>,
     player_2: Box<dyn Player>,
-    state: ConnectFourState,
+    state: ConnectFourState, // generify
 }
 
 impl Operator {

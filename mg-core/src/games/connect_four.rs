@@ -5,6 +5,19 @@ use crate::piece::{Piece, Rank};
 use crate::state::State;
 use std::fmt;
 
+#[derive(Debug)]
+pub enum ConnectFourException {
+    Extraction(String),
+}
+
+impl ConnectFourException {
+    pub fn to_error(&self) -> Error {
+        match self {
+            ConnectFourException::Extraction(e) => Error::Infra(e.to_owned()),
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ConnectFourState {
     Red,
@@ -45,18 +58,129 @@ pub fn play_at_connect_four(
 }
 
 /// To check game state
-pub fn check_is_over(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
-    if let Some(color) = check_board_is_full(board) {
-        Some(color)
-    } else if let Some(color) = check_by_row(board, pon) {
-        Some(color)
-    } else if let Some(color) = check_by_column(board, pon) {
-        Some(color)
-    } else if let Some(color) = check_by_diagonal(board, pon) {
-        Some(color)
-    } else  {
-        None
+/// Row is Board[x][0] -> we fix 0
+/// Column is Board[0][y] -> we fix 0
+pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, Error> {
+    if let Some(equality) = check_board_is_full(board) {
+        return Ok(Some(equality));
     }
+
+    match (
+        check_has_win(&board, pon, &ConnectFourColor::Red),
+        check_has_win(&board, pon, &ConnectFourColor::Yellow),
+    ) {
+        (Ok(false), Ok(false)) => Ok(None),
+        (Ok(true), _) => {eprintln!("HERE"); Ok(Some(ConnectFourColor::Red))},
+        (_, Ok(true)) => {eprintln!("HERE"); Ok(Some(ConnectFourColor::Yellow))},
+        (Err(e), _) | (_, Err(e)) => Err(e.to_error()),
+    }
+}
+
+fn check_has_win(
+    board: &Board,
+    pon: &i8,
+    color: &ConnectFourColor,
+) -> Result<bool, ConnectFourException> {
+    eprintln!("{}", board.display());
+    let (cases, last_column_index, last_row_index) = transform_to_i16(board, color)?;
+    eprintln!("{} ->{:?}", color, cases);
+    if check_row(&cases, &last_row_index, pon) {
+        Ok(true)
+    } else if check_column(&cases, &last_column_index, pon) {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
+}
+
+fn check_row(cases: &[i16], last_row_index: &i8, pon: &i8) -> bool {
+    let mut stack = 0;
+    let mut row = 0;
+    let mut column = 0;
+    let length = cases.len();
+    let mut parcoured = 0;
+    while parcoured < length as i8 {
+        let index = row + column;
+        eprintln!("Stack:{}, Row:{}, Column:{}, LRI:{}, l:{}", stack, row, column, last_row_index, length);
+        if pon == &stack {
+            return true;
+        } else if 0 != index && 0 == column % *last_row_index as i8 {
+            row += 1;
+            stack = 0;
+            column = 0;
+        }
+
+        eprintln!("RC:{}", index);
+        if 1 == cases[index as usize] {
+            stack += 1;
+        } else {
+            stack = 0;
+        }
+
+        column += last_row_index;
+        parcoured += 1;
+    }
+
+    false
+}
+
+fn check_column(cases: &[i16], last_column_index: &i8, pon: &i8) -> bool {
+    let mut stack = 0;
+    let mut index = 0;
+    for case in cases {
+        if pon == &stack {
+            return true;
+        } else if 0 != index && 0 == index % last_column_index {
+            stack = 0;
+        } 
+
+        if &1 == case {
+            stack += 1;
+        } else {
+            stack = 0;
+        }
+
+        index += 1;
+    }
+    false
+}
+
+fn transform_to_i16(
+    board: &Board,
+    color: &ConnectFourColor,
+) -> Result<(Vec<i16>, i8, i8), ConnectFourException> {
+    let Board::ConnectFour(cases) = board;
+    let last_column_index = cases.len();
+    let mut new_cases = Vec::new();
+    let last_row_index = cases[0].len();
+    for row in cases.iter() {
+        for case in row {
+            new_cases.push(if &Case::Empty == case { 
+                0 
+            } else if is_color(&get_piece(case)?, &color) {
+                1
+            } else {
+                0
+            });
+        }
+    }
+    Ok((new_cases, last_column_index as i8, last_row_index as i8))
+}
+
+fn get_piece(case: &Case) -> Result<Piece, ConnectFourException> {
+    if let Some(piece) = case.get_content() {
+        Ok(piece.clone())
+    } else {
+        Err(ConnectFourException::Extraction(format!(
+            "Failed to extract content for case, {}",
+            case.display()
+        )))
+    }
+}
+
+fn is_color(piece: &Piece, color: &ConnectFourColor) -> bool {
+    let Piece::ConnectFour(actual_color, _) = piece;
+    actual_color == color
 }
 
 fn check_board_is_full(board: &Board) -> Option<ConnectFourColor> {
@@ -67,95 +191,23 @@ fn check_board_is_full(board: &Board) -> Option<ConnectFourColor> {
         if Case::Empty == cases[i][max_column] {
             return None;
         }
+        eprintln!("C:{:?}", cases[i][max_column]);
     }
     Some(ConnectFourColor::Equality)
 }
 
-/// Row is Board[x][0] -> we fix 0
-fn check_by_row(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
-    eprintln!("{}", board.display());
-    let Board::ConnectFour(cases) = board;
-    let max_row = cases.len();
-    let max_column = cases[0].len();
-    for i in 0..max_column {
-        let mut row = Vec::with_capacity(max_row);
-
-        for j in 0..max_row {
-            row.push(cases[j][i].clone());
-        }
-        if let Some(color) = check_line(&row, pon) {
-            return Some(color);
-        }
-    }
-    None
-}
-
-/// Column is Board[0][y] -> we fix 0
-fn check_by_column(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
-    let Board::ConnectFour(cases) = board;
-    for column in cases {
-        eprintln!("\n COLUMN => {:?} \n", column);
-        if let Some(color) = check_line(column, pon) {
-            return Some(color);
-        }
-    }
-    None
-}
-
-fn check_by_diagonal(board: &Board, pon: &i8) -> Option<ConnectFourColor> {
-    todo!()
-}
-
-fn check_line(cases: &[Case], pon: &i8) -> Option<ConnectFourColor> {
-    let mut stack = 1;
-
-    let case = &cases[0];
-    if &Case::Empty == case {
-        return None;
-    }
-    let Piece::ConnectFour(color, _) = case
-        .get_content()
-        .unwrap_or_else(|| panic!("Failed to get content from cases when check winner"));
-
-    let mut color = color;
-    for i in 1..cases.len() {
-        if &stack == pon {
-            return Some(color.clone());
-        }
-            
-        let case = &cases[i];
-        if &Case::Empty == case {
-            return None;
-        }
-        let Piece::ConnectFour(new_color, _) = case
-            .get_content()
-            .unwrap_or_else(|| panic!("Failed to get content from cases when check winner"));
-        if new_color == color {
-            stack += 1;
-        } else {
-            stack = 1;
-            color = new_color;
-        }
-    }
-    if &stack == pon {
-        Some(color.clone())
-    } else {
-        None
-    }
-}
-
 impl State for ConnectFourState {
-    fn next(&mut self, board: &Board) {
+    fn next(&mut self, board: &Board) -> Result<(), Error> {
         *self = match self {
             ConnectFourState::Red => {
-                if let Some(color) = check_is_over(board, &4) {
+                if let Some(color) = check_is_over(board, &4)? {
                     ConnectFourState::Over(Some(color))
                 } else {
                     ConnectFourState::Yellow
                 }
             }
             ConnectFourState::Yellow => {
-                if let Some(color) = check_is_over(board, &4) {
+                if let Some(color) = check_is_over(board, &4)? {
                     ConnectFourState::Over(Some(color))
                 } else {
                     ConnectFourState::Red
@@ -163,6 +215,7 @@ impl State for ConnectFourState {
             }
             ConnectFourState::Over(_) => self.clone(),
         };
+        Ok(())
     }
 
     fn message(&self) -> String {
