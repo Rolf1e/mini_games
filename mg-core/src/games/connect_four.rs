@@ -97,27 +97,27 @@ fn check_row(cases: &[i16], last_row_index: &i8, pon: &i8) -> bool {
     let mut stack = 0;
     let mut row = 0;
     let mut column = 0;
-    let length = cases.len();
+    let length = cases.len() as i8;
     let mut parcoured = 0;
-    while parcoured < length as i8 {
-        let index = row + column;
-        eprintln!("Stack:{}, Row:{}, Column:{}, LRI:{}, l:{}", stack, row, column, last_row_index, length);
+    while parcoured < length {
         if pon == &stack {
             return true;
-        } else if 0 != index && 0 == column % *last_row_index as i8 {
+        } 
+
+        column += last_row_index;
+        if 0 != parcoured && 0 == column % length {
             row += 1;
             stack = 0;
             column = 0;
-        }
+        } 
 
-        eprintln!("RC:{}", index);
+        let index = row + column;
         if 1 == cases[index as usize] {
             stack += 1;
         } else {
             stack = 0;
         }
 
-        column += last_row_index;
         parcoured += 1;
     }
 
