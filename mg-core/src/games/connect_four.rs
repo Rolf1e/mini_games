@@ -3,6 +3,8 @@ use crate::case::Case;
 
 use crate::error::Error;
 use crate::piece::{Piece, Rank};
+use crate::player::Action;
+use crate::player::Player;
 use crate::state::State;
 use std::fmt;
 
@@ -149,6 +151,13 @@ fn check_board_is_full(cases: &Vec<Vec<Case>>) -> Option<ConnectFourColor> {
 }
 
 impl State for ConnectFourState {
+    fn default() -> Self
+    where
+        Self: Sized,
+    {
+        ConnectFourState::Red
+    }
+
     fn next(&mut self, board: &Board) -> Result<(), Error> {
         *self = match self {
             ConnectFourState::Red => {
@@ -165,7 +174,8 @@ impl State for ConnectFourState {
                     ConnectFourState::Red
                 }
             }
-            ConnectFourState::Over(_) => self.clone(),
+            ConnectFourState::Over(Some(color)) => ConnectFourState::Over(Some(color.clone())),
+            ConnectFourState::Over(None) => ConnectFourState::Over(None),
         };
         Ok(())
     }
@@ -181,6 +191,20 @@ impl State for ConnectFourState {
                     String::from("Not over yet")
                 }
             }
+        }
+    }
+
+    fn ask_next_player(
+        &self,
+        players: &Vec<&Box<dyn Player>>,
+        board: &Board,
+    ) -> Result<Action, Error> {
+        match &self {
+            ConnectFourState::Red => Ok(players[0].ask_next_move(board)),
+            ConnectFourState::Yellow => Ok(players[1].ask_next_move(board)),
+            ConnectFourState::Over(_) => Err(Error::IllegalMove(String::from(
+                "You shouldn't be able to call this state, you hacker",
+            ))),
         }
     }
 }

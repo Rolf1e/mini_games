@@ -16,20 +16,18 @@ impl Piece {
             Piece::ConnectFour(color, _) => color.to_string(),
         }
     }
-    
+
     pub fn rank(&self) -> &Rank {
         match self {
             Piece::ConnectFour(_, rank) => rank,
         }
     }
-
 }
 
 impl Rank {
-    pub fn get(&self) -> usize  {
+    pub fn get(&self) -> usize {
         match self {
             Rank::ConnectFour => 0,
         }
     }
 }
-

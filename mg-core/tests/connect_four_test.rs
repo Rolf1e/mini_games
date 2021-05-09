@@ -78,28 +78,39 @@ mod connect_four_test {
 
     fn create_2x2_game() -> Operator {
         let board = create_board_2x2().unwrap();
-        let player = TestPlayer {
+        let player_2 = TestPlayer {
             color: ConnectFourColor::Yellow,
             name: String::from("Tigran"),
         };
-        let player_2 = TestPlayer {
+        let player = TestPlayer {
             color: ConnectFourColor::Red,
             name: String::from("Cassiopée"),
         };
-        Operator::new(board, Box::new(player), Box::new(player_2))
+        Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        )
     }
 
     fn create_3x3_game() -> Operator {
         let board = create_board_3x3().unwrap();
-        let player = TestPlayer {
+        let player_2 = TestPlayer {
             color: ConnectFourColor::Yellow,
             name: String::from("Tigran"),
         };
-        let player_2 = TestPlayer {
+        let player = TestPlayer {
             color: ConnectFourColor::Red,
             name: String::from("Cassiopée"),
         };
-        Operator::new(board, Box::new(player), Box::new(player_2))
+
+        Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        )
     }
 
     fn create_board_2x2() -> Result<Board, Error> {
@@ -230,28 +241,19 @@ mod connect_four_test {
     }
 
     #[test]
-    fn should_not_play() {
-        let mut operator = create_3x3_game();
-
-        if let Err(e) = operator.play() {
-            assert_eq!(Error::IllegalMove(String::from("This move is illegal")), e);
-        }
-    }
-
-    #[test]
     fn should_let_play() {
         let mut operator = create_3x3_game();
         if let Err(_) = operator.play() {
             assert!(false);
         }
 
-        let state = operator.state().unwrap();
+        let state = operator.state();
         let expected: &dyn State = &ConnectFourState::Yellow;
         assert_eq!(expected.message(), state.message());
     }
 
     #[test]
-    fn should_stop_playing() {
+    fn should_stop_playing_because_equality() {
         let player = TestPlayer {
             color: ConnectFourColor::Yellow,
             name: String::from("Tigran"),
@@ -266,10 +268,16 @@ mod connect_four_test {
             vec![RED_CASE, YELLOW_CASE],
         ]);
 
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
-        let state = operator.state().unwrap();
+        let mut operator = Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        );
+        operator.test_update_state().unwrap();
+        let state = operator.state();
 
-        let expected: &dyn State = &ConnectFourState::Over(None);
+        let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Equality));
         assert_eq!(expected.message(), state.message());
     }
 
@@ -290,8 +298,14 @@ mod connect_four_test {
             vec![YELLOW_CASE, RED_CASE, Case::Empty, Case::Empty],
         ]);
 
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
-        let state = operator.state().unwrap();
+        let mut operator = Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        );
+        operator.test_update_state().unwrap();
+        let state = operator.state();
 
         let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Red));
         assert_eq!(expected.message(), state.message());
@@ -315,8 +329,14 @@ mod connect_four_test {
             vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
         ]);
 
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
-        let state = operator.state().unwrap();
+        let mut operator = Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        );
+        operator.test_update_state().unwrap();
+        let state = operator.state();
 
         let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Yellow));
         assert_eq!(expected.message(), state.message());
@@ -339,8 +359,14 @@ mod connect_four_test {
             vec![RED_CASE, RED_CASE, RED_CASE, YELLOW_CASE],
         ]);
 
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
-        let state = operator.state().unwrap();
+        let mut operator = Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        );
+        operator.test_update_state().unwrap();
+        let state = operator.state();
 
         let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Yellow));
         assert_eq!(expected.message(), state.message());
@@ -363,8 +389,14 @@ mod connect_four_test {
             vec![RED_CASE, RED_CASE, RED_CASE, YELLOW_CASE],
         ]);
 
-        let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
-        let state = operator.state().unwrap();
+        let mut operator = Operator::new(
+            board,
+            Box::new(player),
+            Box::new(player_2),
+            Box::new(ConnectFourState::default()),
+        );
+        operator.test_update_state().unwrap();
+        let state = operator.state();
 
         let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Equality));
         assert_eq!(expected.message(), state.message());

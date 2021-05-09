@@ -1,7 +1,7 @@
 use crate::case::Case;
 use crate::error::Error;
-use crate::player::Action;
 use crate::games::connect_four;
+use crate::player::Action;
 
 #[derive(Debug, Clone)]
 pub enum Board {
@@ -40,4 +40,3 @@ impl Board {
         }
     }
 }
-

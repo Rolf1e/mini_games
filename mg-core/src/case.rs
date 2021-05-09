@@ -1,4 +1,3 @@
-use crate::games::connect_four::ConnectFourColor;
 use crate::piece::Piece;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -16,7 +15,6 @@ impl Case {
     }
 
     pub fn get_content(&self) -> Option<&Piece> {
-        // String::from("");
         match self {
             Case::Empty => None,
             Case::ConnectFour(piece) => Some(piece),

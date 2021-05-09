@@ -7,7 +7,6 @@ use mg_core::player::Action;
 fn main() {
     let mut board = create_board_3x3().unwrap();
 
-    
     board
         .play(Action::ConnectFour(0, ConnectFourColor::Yellow))
         .unwrap();
