@@ -59,13 +59,14 @@ pub fn play_at_connect_four(
 }
 
 pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, Error> {
-    if let Some(equality) = check_board_is_full(board) {
+    let Board::ConnectFour(cases) = board;
+    if let Some(equality) = check_board_is_full(cases) {
         return Ok(Some(equality));
     }
 
     match (
-        check_has_win(&board, pon, &ConnectFourColor::Red),
-        check_has_win(&board, pon, &ConnectFourColor::Yellow),
+        check_has_win(&cases, pon, &ConnectFourColor::Red),
+        check_has_win(&cases, pon, &ConnectFourColor::Yellow),
     ) {
         (Ok(false), Ok(false)) => Ok(None),
         (Ok(true), _) => Ok(Some(ConnectFourColor::Red)),
@@ -76,24 +77,18 @@ pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>
 
 //https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
 fn check_has_win(
-    board: &Board,
+    cases: &Vec<Vec<Case>>,
     pon: &i8,
     color: &ConnectFourColor,
 ) -> Result<bool, ConnectFourException> {
-    let (bitboard, last_column_index) = transform_to_bitboard(board, color)?;
-    eprintln!("bitboard {}: -> {:b}", color, bitboard);
+    let (bitboard, last_column_index) = transform_to_bitboard(cases, color)?;
     Ok(check_is_win(bitboard, last_column_index))
 }
 
-//  3	 7 11	15
-//  2	 6 10	14
-//  1	 5  9	13
-//  0	 4  8	12
 fn check_is_win(bitboard: i64, width: i16) -> bool {
     let directions = resolve_directions(width);
     let mut bb: i64;
     for direction in directions {
-        // eprintln!("{:?}", direction);
         bb = bitboard & (bitboard >> direction);
         if (bb & (bb >> (2 * direction))) != 0 {
             return true;
@@ -107,10 +102,9 @@ fn resolve_directions(width: i16) -> Vec<i16> {
 }
 
 fn transform_to_bitboard(
-    board: &Board,
+    cases: &Vec<Vec<Case>>,
     color: &ConnectFourColor,
 ) -> Result<(i64, i16), ConnectFourException> {
-    let Board::ConnectFour(cases) = board;
     let last_column_index = cases.len() as i16;
     let mut bitboard: i64 = 0;
 
@@ -143,15 +137,13 @@ fn is_color(piece: &Piece, color: &ConnectFourColor) -> bool {
     actual_color == color
 }
 
-fn check_board_is_full(board: &Board) -> Option<ConnectFourColor> {
-    let Board::ConnectFour(cases) = board;
+fn check_board_is_full(cases: &Vec<Vec<Case>>) -> Option<ConnectFourColor> {
     let max_row = cases.len();
     let max_column = cases[0].len() - 1;
     for i in 0..max_row {
         if Case::Empty == cases[i][max_column] {
             return None;
         }
-        eprintln!("C:{:?}", cases[i][max_column]);
     }
     Some(ConnectFourColor::Equality)
 }

@@ -25,12 +25,14 @@ impl Operator {
     pub fn play(&mut self) -> Result<(), Error> {
         let action = self.ask_player();
         self.board.play(action)?;
-        Ok(self.change_state())
+        self.change_state()
     }
 
-    pub fn state(&mut self) -> &dyn State {
-        self.state.next(&self.board);
-        &self.state
+    pub fn state(&mut self) -> Result<&dyn State, Error> {
+        match self.change_state() {
+            Ok(_) => Ok(&self.state),
+            Err(e) => Err(e),
+        }
     }
 
     fn ask_player(&self) -> Action {
@@ -43,8 +45,8 @@ impl Operator {
         }
     }
 
-    fn change_state(&mut self) {
-        self.state.next(&self.board);
+    fn change_state(&mut self) -> Result<(), Error> {
+        self.state.next(&self.board)
     }
 }
 
