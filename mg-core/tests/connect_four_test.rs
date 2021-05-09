@@ -307,21 +307,22 @@ mod connect_four_test {
             color: ConnectFourColor::Red,
             name: String::from("Cassiopée"),
         };
+
         let board = Board::ConnectFour(vec![
-            vec![YELLOW_CASE, YELLOW_CASE, Case::Empty, Case::Empty],
-            vec![RED_CASE, RED_CASE, RED_CASE, RED_CASE],
+            vec![RED_CASE, YELLOW_CASE, RED_CASE, RED_CASE],
             vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
+            vec![YELLOW_CASE, YELLOW_CASE, YELLOW_CASE, YELLOW_CASE],
             vec![YELLOW_CASE, Case::Empty, Case::Empty, Case::Empty],
         ]);
 
         let mut operator = Operator::new(board, Box::new(player), Box::new(player_2));
         let state = operator.state();
 
-        let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Red));
+        let expected: &dyn State = &ConnectFourState::Over(Some(ConnectFourColor::Yellow));
         assert_eq!(expected.message(), state.message());
     }
 
-    // #[test]
+    #[test]
     fn should_have_winner_diagonal() {
         let player = TestPlayer {
             color: ConnectFourColor::Yellow,

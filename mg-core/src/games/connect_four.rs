@@ -1,5 +1,6 @@
 use crate::board::Board;
 use crate::case::Case;
+
 use crate::error::Error;
 use crate::piece::{Piece, Rank};
 use crate::state::State;
@@ -57,9 +58,6 @@ pub fn play_at_connect_four(
     }
 }
 
-/// To check game state
-/// Row is Board[x][0] -> we fix 0
-/// Column is Board[0][y] -> we fix 0
 pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, Error> {
     if let Some(equality) = check_board_is_full(board) {
         return Ok(Some(equality));
@@ -70,101 +68,63 @@ pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>
         check_has_win(&board, pon, &ConnectFourColor::Yellow),
     ) {
         (Ok(false), Ok(false)) => Ok(None),
-        (Ok(true), _) => {eprintln!("HERE"); Ok(Some(ConnectFourColor::Red))},
-        (_, Ok(true)) => {eprintln!("HERE"); Ok(Some(ConnectFourColor::Yellow))},
+        (Ok(true), _) => Ok(Some(ConnectFourColor::Red)),
+        (_, Ok(true)) => Ok(Some(ConnectFourColor::Yellow)),
         (Err(e), _) | (_, Err(e)) => Err(e.to_error()),
     }
 }
 
+//https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
 fn check_has_win(
     board: &Board,
     pon: &i8,
     color: &ConnectFourColor,
 ) -> Result<bool, ConnectFourException> {
-    eprintln!("{}", board.display());
-    let (cases, last_column_index, last_row_index) = transform_to_i16(board, color)?;
-    eprintln!("{} ->{:?}", color, cases);
-    if check_row(&cases, &last_row_index, pon) {
-        Ok(true)
-    } else if check_column(&cases, &last_column_index, pon) {
-        Ok(true)
-    } else {
-        Ok(false)
-    }
+    let (bitboard, last_column_index) = transform_to_bitboard(board, color)?;
+    eprintln!("bitboard {}: -> {:b}", color, bitboard);
+    Ok(check_is_win(bitboard, last_column_index))
 }
 
-fn check_row(cases: &[i16], last_row_index: &i8, pon: &i8) -> bool {
-    let mut stack = 0;
-    let mut row = 0;
-    let mut column = 0;
-    let length = cases.len() as i8;
-    let mut parcoured = 0;
-    while parcoured < length {
-        if pon == &stack {
+//  3	 7 11	15
+//  2	 6 10	14
+//  1	 5  9	13
+//  0	 4  8	12
+fn check_is_win(bitboard: i64, width: i16) -> bool {
+    let directions = resolve_directions(width);
+    let mut bb: i64;
+    for direction in directions {
+        // eprintln!("{:?}", direction);
+        bb = bitboard & (bitboard >> direction);
+        if (bb & (bb >> (2 * direction))) != 0 {
             return true;
-        } 
-
-        column += last_row_index;
-        if 0 != parcoured && 0 == column % length {
-            row += 1;
-            stack = 0;
-            column = 0;
-        } 
-
-        let index = row + column;
-        if 1 == cases[index as usize] {
-            stack += 1;
-        } else {
-            stack = 0;
         }
-
-        parcoured += 1;
-    }
-
-    false
-}
-
-fn check_column(cases: &[i16], last_column_index: &i8, pon: &i8) -> bool {
-    let mut stack = 0;
-    let mut index = 0;
-    for case in cases {
-        if pon == &stack {
-            return true;
-        } else if 0 != index && 0 == index % last_column_index {
-            stack = 0;
-        } 
-
-        if &1 == case {
-            stack += 1;
-        } else {
-            stack = 0;
-        }
-
-        index += 1;
     }
     false
 }
 
-fn transform_to_i16(
+fn resolve_directions(width: i16) -> Vec<i16> {
+    vec![1, width, width - 1, width + 1]
+}
+
+fn transform_to_bitboard(
     board: &Board,
     color: &ConnectFourColor,
-) -> Result<(Vec<i16>, i8, i8), ConnectFourException> {
+) -> Result<(i64, i16), ConnectFourException> {
     let Board::ConnectFour(cases) = board;
-    let last_column_index = cases.len();
-    let mut new_cases = Vec::new();
-    let last_row_index = cases[0].len();
-    for row in cases.iter() {
-        for case in row {
-            new_cases.push(if &Case::Empty == case { 
-                0 
-            } else if is_color(&get_piece(case)?, &color) {
-                1
-            } else {
-                0
-            });
+    let last_column_index = cases.len() as i16;
+    let mut bitboard: i64 = 0;
+
+    for (i, case) in cases.iter().flatten().enumerate() {
+        if &Case::Empty == case {
+            bitboard ^= 0 << i;
+        } else if is_color(&get_piece(case)?, &color) {
+            bitboard ^= 1 << i;
+        } else {
+            bitboard ^= 0 << i;
         }
     }
-    Ok((new_cases, last_column_index as i8, last_row_index as i8))
+
+    Ok((bitboard, last_column_index))
 }
 
 fn get_piece(case: &Case) -> Result<Piece, ConnectFourException> {
