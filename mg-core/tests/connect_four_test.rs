@@ -3,7 +3,7 @@ mod connect_four_test {
 
     use mg_core::board::Board;
     use mg_core::case::Case;
-    use mg_core::error::Error;
+    use mg_core::error::MGError;
     use mg_core::games::connect_four::{ConnectFourColor, ConnectFourState};
     use mg_core::operator::Operator;
     use mg_core::piece::{Piece, Rank};
@@ -32,11 +32,11 @@ mod connect_four_test {
     }
 
     impl Player for TestPlayer2 {
-        fn ask_next_move(&self, _board: &Board) -> Action {
+        fn ask_next_move(&self, _board: &Board) -> Result<Action, MGError> {
             match &self.color {
-                ConnectFourColor::Red => Action::ConnectFour(0, ConnectFourColor::Red),
-                ConnectFourColor::Yellow => Action::ConnectFour(1, ConnectFourColor::Yellow),
-                ConnectFourColor::Equality => panic!(),
+                ConnectFourColor::Red => Ok(Action::ConnectFour(0, ConnectFourColor::Red)),
+                ConnectFourColor::Yellow => Ok(Action::ConnectFour(1, ConnectFourColor::Yellow)),
+                ConnectFourColor::Equality => Err(MGError::BadGame),
             }
         }
 
@@ -50,11 +50,11 @@ mod connect_four_test {
     }
 
     impl Player for TestPlayer {
-        fn ask_next_move(&self, _board: &Board) -> Action {
+        fn ask_next_move(&self, _board: &Board) -> Result<Action, MGError> {
             match &self.color {
-                ConnectFourColor::Red => Action::ConnectFour(0, ConnectFourColor::Red),
-                ConnectFourColor::Yellow => Action::ConnectFour(0, ConnectFourColor::Yellow),
-                ConnectFourColor::Equality => panic!(),
+                ConnectFourColor::Red => Ok(Action::ConnectFour(0, ConnectFourColor::Red)),
+                ConnectFourColor::Yellow => Ok(Action::ConnectFour(0, ConnectFourColor::Yellow)),
+                ConnectFourColor::Equality => Err(MGError::BadGame),
             }
         }
 
@@ -67,7 +67,7 @@ mod connect_four_test {
         }
     }
 
-    fn create_board_3x3() -> Result<Board, Error> {
+    fn create_board_3x3() -> Result<Board, MGError> {
         let empty_row = vec![Case::Empty, Case::Empty, Case::Empty];
         Ok(Board::ConnectFour(vec![
             empty_row.clone(),
@@ -113,7 +113,7 @@ mod connect_four_test {
         )
     }
 
-    fn create_board_2x2() -> Result<Board, Error> {
+    fn create_board_2x2() -> Result<Board, MGError> {
         let empty_row = vec![Case::Empty, Case::Empty];
         Ok(Board::ConnectFour(vec![empty_row.clone(), empty_row]))
     }

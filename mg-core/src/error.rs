@@ -1,18 +1,22 @@
 #[derive(Debug, Eq, PartialEq)]
-pub enum Error {
+pub enum MGError {
     WrongCaseType,
     IllegalMove(String),
     BadGame,
     Infra(String),
+    ReadInputAction,
+    ParseInputAction(String),
 }
 
-impl Error {
+impl MGError {
     pub fn message(&self) -> String {
         match self {
-            Error::WrongCaseType => String::from("This case type does not exist"),
-            Error::IllegalMove(s) => s.to_owned(),
-            Error::BadGame => String::from("Game does not exist"),
-            Error::Infra(e) => e.to_owned(),
+            MGError::WrongCaseType => String::from("This case type does not exist"),
+            MGError::IllegalMove(s) => s.to_owned(),
+            MGError::BadGame => String::from("Game does not exist"),
+            MGError::Infra(e) => e.to_owned(),
+            MGError::ReadInputAction => String::from("Failed to read input move"),
+            MGError::ParseInputAction(input) => format!("Failed to parse input {}", input),
         }
     }
 }

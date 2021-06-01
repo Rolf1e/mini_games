@@ -1,7 +1,6 @@
 use crate::board::Board;
 use crate::case::Case;
-
-use crate::error::Error;
+use crate::error::MGError;
 use crate::piece::{Piece, Rank};
 use crate::player::Action;
 use crate::player::Player;
@@ -14,12 +13,13 @@ pub enum ConnectFourException {
 }
 
 impl ConnectFourException {
-    pub fn to_error(&self) -> Error {
+    pub fn to_error(&self) -> MGError {
         match self {
-            ConnectFourException::Extraction(e) => Error::Infra(e.to_owned()),
+            ConnectFourException::Extraction(e) => MGError::Infra(e.to_owned()),
         }
     }
 }
+
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ConnectFourState {
@@ -35,11 +35,19 @@ pub enum ConnectFourColor {
     Equality,
 }
 
+pub fn parse_input(input: String, color: &ConnectFourColor) -> Result<Action, MGError> {
+    if let Ok(parsed) = input.parse::<i16>() {
+        Ok(Action::ConnectFour(parsed as usize, color.clone()))
+    } else {
+        Err(MGError::ParseInputAction(input))
+    }
+}
+
 pub fn play_at_connect_four(
     column_index: usize,
     color: ConnectFourColor,
     board: &mut Board,
-) -> Result<(), Error> {
+) -> Result<(), MGError> {
     let Board::ConnectFour(cases) = board;
     if let Some(column) = cases.get(column_index) {
         if let Some(row_index) = index_of_new_pon(&column) {
@@ -50,17 +58,17 @@ pub fn play_at_connect_four(
             )?;
             Ok(())
         } else {
-            Err(Error::IllegalMove(String::from("Column is full")))
+            Err(MGError::IllegalMove(String::from("Column is full")))
         }
     } else {
-        Err(Error::IllegalMove(format!(
+        Err(MGError::IllegalMove(format!(
             "Column {} is out of bounds",
             column_index
         )))
     }
 }
 
-pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, Error> {
+pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, MGError> {
     let Board::ConnectFour(cases) = board;
     if let Some(equality) = check_board_is_full(cases) {
         return Ok(Some(equality));
@@ -158,7 +166,7 @@ impl State for ConnectFourState {
         ConnectFourState::Red
     }
 
-    fn next(&mut self, board: &Board) -> Result<(), Error> {
+    fn next(&mut self, board: &Board) -> Result<(), MGError> {
         *self = match self {
             ConnectFourState::Red => {
                 if let Some(color) = check_is_over(board, &4)? {
@@ -198,11 +206,11 @@ impl State for ConnectFourState {
         &self,
         players: &Vec<&Box<dyn Player>>,
         board: &Board,
-    ) -> Result<Action, Error> {
+    ) -> Result<Action, MGError> {
         match &self {
-            ConnectFourState::Red => Ok(players[0].ask_next_move(board)),
-            ConnectFourState::Yellow => Ok(players[1].ask_next_move(board)),
-            ConnectFourState::Over(_) => Err(Error::IllegalMove(String::from(
+            ConnectFourState::Red => Ok(players[0].ask_next_move(board)?),
+            ConnectFourState::Yellow => Ok(players[1].ask_next_move(board)?),
+            ConnectFourState::Over(_) => Err(MGError::IllegalMove(String::from(
                 "You shouldn't be able to call this state, you hacker",
             ))),
         }
@@ -243,3 +251,4 @@ fn index_of_new_pon(column: &[Case]) -> Option<usize> {
     }
     None
 }
+

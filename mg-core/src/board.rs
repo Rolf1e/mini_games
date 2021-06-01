@@ -1,5 +1,6 @@
 use crate::case::Case;
-use crate::error::Error;
+use crate::error::MGError;
+use crate::player::Color;
 use crate::games::connect_four;
 use crate::player::Action;
 
@@ -11,7 +12,14 @@ pub enum Board {
 pub type Coordinate = (usize, usize);
 
 impl Board {
-    pub fn play(&mut self, action: Action) -> Result<(), Error> {
+
+    pub fn parse_input(input: String, color: &Color) -> Result<Action, MGError>  {
+        match color {
+            Color::ConnectFour(c) => connect_four::parse_input(input, c)
+        }
+    }
+
+    pub fn play(&mut self, action: Action) -> Result<(), MGError> {
         match (&self, action) {
             (Board::ConnectFour(_), Action::ConnectFour(column_index, color)) => {
                 connect_four::play_at_connect_four(column_index, color, self)
@@ -31,7 +39,7 @@ impl Board {
         }
     }
 
-    pub fn place(&mut self, case: Case, x: usize, y: usize) -> Result<(), Error> {
+    pub fn place(&mut self, case: Case, x: usize, y: usize) -> Result<(), MGError> {
         match self {
             Board::ConnectFour(board) => {
                 board[x][y] = case;
@@ -40,3 +48,4 @@ impl Board {
         }
     }
 }
+

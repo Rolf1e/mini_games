@@ -1,5 +1,5 @@
 use crate::board::Board;
-use crate::error::Error;
+use crate::error::MGError;
 use crate::player::Action;
 use crate::player::Player;
 
@@ -8,7 +8,7 @@ pub trait State {
     where
         Self: Sized;
 
-    fn next(&mut self, board: &Board) -> Result<(), Error>;
+    fn next(&mut self, board: &Board) -> Result<(), MGError>;
 
     fn message(&self) -> String;
 
@@ -16,5 +16,5 @@ pub trait State {
         &self,
         players: &Vec<&Box<dyn Player>>,
         board: &Board,
-    ) -> Result<Action, Error>;
+    ) -> Result<Action, MGError>;
 }

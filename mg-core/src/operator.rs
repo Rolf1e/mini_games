@@ -1,5 +1,5 @@
 use crate::board::Board;
-use crate::error::Error;
+use crate::error::MGError;
 use crate::player::Action;
 use crate::player::Player;
 use crate::state::State;
@@ -26,7 +26,7 @@ impl Operator {
         }
     }
 
-    pub fn play(&mut self) -> Result<(), Error> {
+    pub fn play(&mut self) -> Result<(), MGError> {
         let action = self.ask_player()?;
         self.board.play(action)?;
         self.update_state()
@@ -36,17 +36,17 @@ impl Operator {
         &self.state
     }
 
-    fn ask_player(&self) -> Result<Action, Error> {
+    fn ask_player(&self) -> Result<Action, MGError> {
         self.state
             .ask_next_player(&vec![&self.player_1, &self.player_2], &self.board)
     }
 
     /// TODO Only for testing, should be removed
-    pub fn test_update_state(&mut self) -> Result<(), Error> {
+    pub fn test_update_state(&mut self) -> Result<(), MGError> {
         self.update_state()
     }
 
-    fn update_state(&mut self) -> Result<(), Error> {
+    fn update_state(&mut self) -> Result<(), MGError> {
         eprintln!("Changing state");
         self.state.next(&self.board)
     }
