@@ -27,10 +27,9 @@ pub struct ConsolePlayer {
 }
 
 impl Player for ConsolePlayer {
-
     fn ask_next_move(&self, _board: &Board) -> Result<Action, MGError> {
         println!("{:?} is playing", self.color);
-        println!("from ? (e.g 0A)");
+        println!("column ? ");
         if let Ok(input) = read_from_input() {
             Ok(Board::parse_input(input, &self.color)?)
         } else {
@@ -53,7 +52,6 @@ impl ConsolePlayer {
     }
 }
 
-
 fn read_from_input() -> io::Result<String> {
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
@@ -61,4 +59,3 @@ fn read_from_input() -> io::Result<String> {
     input.pop();
     Ok(input)
 }
-

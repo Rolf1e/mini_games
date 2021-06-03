@@ -1,30 +1,55 @@
 use mg_core::board::Board;
 use mg_core::case::Case;
 use mg_core::error::MGError;
-use mg_core::games::connect_four::ConnectFourColor;
-use mg_core::player::Action;
+use mg_core::games::connect_four::{ConnectFourColor, ConnectFourState};
+use mg_core::operator::Operator;
+use mg_core::player::{Color, ConsolePlayer};
 
 fn main() {
-    let mut board = create_board_3x3().unwrap();
+    match operator() {
+        Ok(mut operator) => loop { plays_one_turn(&mut operator)}
+        Err(e) => panic!("Failed to create ConnectFour operator, {}", e.message()),
+    }
 
-    board
-        .play(Action::ConnectFour(0, ConnectFourColor::Yellow))
-        .unwrap();
-    board
-        .play(Action::ConnectFour(0, ConnectFourColor::Red))
-        .unwrap();
-    board
-        .play(Action::ConnectFour(1, ConnectFourColor::Yellow))
-        .unwrap();
-    board
-        .play(Action::ConnectFour(0, ConnectFourColor::Red))
-        .unwrap();
-    println!("{}", board.display());
 }
 
-fn create_board_3x3() -> Result<Board, MGError> {
-    let empty_row = vec![Case::Empty, Case::Empty, Case::Empty];
+fn plays_one_turn(operator: &mut Operator) {
+    if let Err(e) = operator.play() {
+        panic!("{}", e.message())
+    } else {
+        println!("{}", operator.display());
+    }
+}
+
+fn operator() -> Result<Operator, MGError> {
+    Ok(Operator::new(
+        create_board()?,
+        Box::new(ConsolePlayer::new(
+            Color::ConnectFour(ConnectFourColor::Red),
+            String::from("Malokran"),
+        )),
+        Box::new(ConsolePlayer::new(
+            Color::ConnectFour(ConnectFourColor::Yellow),
+            String::from("Tigran"),
+        )),
+        Box::new(ConnectFourState::Red),
+    ))
+}
+
+fn create_board() -> Result<Board, MGError> {
+    let empty_row = vec![
+        Case::Empty,
+        Case::Empty,
+        Case::Empty,
+        Case::Empty,
+        Case::Empty,
+        Case::Empty,
+    ];
     Ok(Board::ConnectFour(vec![
+        empty_row.clone(),
+        empty_row.clone(),
+        empty_row.clone(),
+        empty_row.clone(),
         empty_row.clone(),
         empty_row.clone(),
         empty_row,

@@ -12,6 +12,7 @@ pub struct Operator {
 }
 
 impl Operator {
+
     pub fn new(
         board: Board,
         player_1: Box<dyn Player>,
@@ -49,5 +50,9 @@ impl Operator {
     fn update_state(&mut self) -> Result<(), MGError> {
         eprintln!("Changing state");
         self.state.next(&self.board)
+    }
+
+    pub fn display(&self) -> String {
+        self.board.display()
     }
 }

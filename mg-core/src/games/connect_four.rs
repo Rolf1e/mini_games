@@ -230,16 +230,19 @@ impl fmt::Display for ConnectFourColor {
 
 pub fn display(board: &Board) -> String {
     let Board::ConnectFour(cases) = board;
-    let cases_length = cases.len();
     let mut message = String::new();
-    for y in (0..cases_length).rev() {
+    let cases_len = cases.len();
+    let col_len = cases[0].len();
+    for y in (0..col_len).rev() {
         message.push('|');
-        for x in 0..cases_length {
+        for x in 0..cases_len {
             let case = board.at((x, y));
             message.push_str(format!(" {} |", case.display()).as_str());
         }
         message.push('\n');
     }
+
+
     message
 }
 
