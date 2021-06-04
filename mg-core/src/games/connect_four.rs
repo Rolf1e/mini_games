@@ -20,7 +20,6 @@ impl ConnectFourException {
     }
 }
 
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ConnectFourState {
     Red,
@@ -48,47 +47,52 @@ pub fn play_at_connect_four(
     color: ConnectFourColor,
     board: &mut Board,
 ) -> Result<(), MGError> {
-    let Board::ConnectFour(cases) = board;
-    if let Some(column) = cases.get(column_index) {
-        if let Some(row_index) = index_of_new_pon(&column) {
-            board.place(
-                Case::ConnectFour(Piece::ConnectFour(color, Rank::ConnectFour)),
-                column_index,
-                row_index,
-            )?;
-            Ok(())
+    if let Board::ConnectFour(cases) = board {
+        if let Some(column) = cases.get(column_index) {
+            if let Some(row_index) = index_of_new_pon(&column) {
+                board.place(
+                    Case::ConnectFour(Piece::ConnectFour(color, Rank::ConnectFour)),
+                    column_index,
+                    row_index,
+                )?;
+                Ok(())
+            } else {
+                Err(MGError::IllegalMove(String::from("Column is full")))
+            }
         } else {
-            Err(MGError::IllegalMove(String::from("Column is full")))
+            Err(MGError::IllegalMove(format!(
+                "Column {} is out of bounds",
+                column_index
+            )))
         }
     } else {
-        Err(MGError::IllegalMove(format!(
-            "Column {} is out of bounds",
-            column_index
-        )))
+        Err(MGError::BadGame)
     }
 }
 
-pub fn check_is_over(board: &Board, pon: &i8) -> Result<Option<ConnectFourColor>, MGError> {
-    let Board::ConnectFour(cases) = board;
-    if let Some(equality) = check_board_is_full(cases) {
-        return Ok(Some(equality));
-    }
+fn check_is_over(board: &Board) -> Result<Option<ConnectFourColor>, MGError> {
+    if let Board::ConnectFour(cases) = board {
+        if let Some(equality) = check_board_is_full(cases) {
+            return Ok(Some(equality));
+        }
 
-    match (
-        check_has_win(&cases, pon, &ConnectFourColor::Red),
-        check_has_win(&cases, pon, &ConnectFourColor::Yellow),
-    ) {
-        (Ok(false), Ok(false)) => Ok(None),
-        (Ok(true), _) => Ok(Some(ConnectFourColor::Red)),
-        (_, Ok(true)) => Ok(Some(ConnectFourColor::Yellow)),
-        (Err(e), _) | (_, Err(e)) => Err(e.to_error()),
+        match (
+            check_has_win(&cases, &ConnectFourColor::Red),
+            check_has_win(&cases, &ConnectFourColor::Yellow),
+        ) {
+            (Ok(false), Ok(false)) => Ok(None),
+            (Ok(true), _) => Ok(Some(ConnectFourColor::Red)),
+            (_, Ok(true)) => Ok(Some(ConnectFourColor::Yellow)),
+            (Err(e), _) | (_, Err(e)) => Err(e.to_error()),
+        }
+    } else {
+        Err(MGError::BadGame)
     }
 }
 
 //https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
 fn check_has_win(
     cases: &Vec<Vec<Case>>,
-    pon: &i8,
     color: &ConnectFourColor,
 ) -> Result<bool, ConnectFourException> {
     let (bitboard, last_column_index) = transform_to_bitboard(cases, color)?;
@@ -169,14 +173,14 @@ impl State for ConnectFourState {
     fn next(&mut self, board: &Board) -> Result<(), MGError> {
         *self = match self {
             ConnectFourState::Red => {
-                if let Some(color) = check_is_over(board, &4)? {
+                if let Some(color) = check_is_over(board)? {
                     ConnectFourState::Over(Some(color))
                 } else {
                     ConnectFourState::Yellow
                 }
             }
             ConnectFourState::Yellow => {
-                if let Some(color) = check_is_over(board, &4)? {
+                if let Some(color) = check_is_over(board)? {
                     ConnectFourState::Over(Some(color))
                 } else {
                     ConnectFourState::Red
@@ -229,21 +233,23 @@ impl fmt::Display for ConnectFourColor {
 }
 
 pub fn display(board: &Board) -> String {
-    let Board::ConnectFour(cases) = board;
-    let mut message = String::new();
-    let cases_len = cases.len();
-    let col_len = cases[0].len();
-    for y in (0..col_len).rev() {
-        message.push('|');
-        for x in 0..cases_len {
-            let case = board.at((x, y));
-            message.push_str(format!(" {} |", case.display()).as_str());
+    if let Board::ConnectFour(cases) = board {
+        let mut message = String::new();
+        let cases_len = cases.len();
+        let col_len = cases[0].len();
+        for y in (0..col_len).rev() {
+            message.push('|');
+            for x in 0..cases_len {
+                let case = board.at((x, y));
+                message.push_str(format!(" {} |", case.display()).as_str());
+            }
+            message.push('\n');
         }
-        message.push('\n');
+
+        message 
+    } else {
+        String::from("Bad board type")
     }
-
-
-    message
 }
 
 fn index_of_new_pon(column: &[Case]) -> Option<usize> {
@@ -254,4 +260,3 @@ fn index_of_new_pon(column: &[Case]) -> Option<usize> {
     }
     None
 }
-

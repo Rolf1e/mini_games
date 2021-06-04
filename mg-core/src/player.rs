@@ -1,6 +1,7 @@
 use crate::board::Board;
 use crate::error::MGError;
 use crate::games::connect_four::ConnectFourColor;
+use crate::games::chess::ChessColor;
 use std::io;
 use std::str;
 
@@ -12,13 +13,16 @@ pub trait Player {
     fn get_name(&self) -> &str;
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum Action {
     ConnectFour(usize, ConnectFourColor),
+    Chess((String, usize), (String, usize)),
 }
 
 #[derive(Debug)]
 pub enum Color {
     ConnectFour(ConnectFourColor),
+    Chess(ChessColor)
 }
 
 pub struct ConsolePlayer {

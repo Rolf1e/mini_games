@@ -76,24 +76,6 @@ mod connect_four_test {
         ]))
     }
 
-    fn create_2x2_game() -> Operator {
-        let board = create_board_2x2().unwrap();
-        let player_2 = TestPlayer {
-            color: ConnectFourColor::Yellow,
-            name: String::from("Tigran"),
-        };
-        let player = TestPlayer {
-            color: ConnectFourColor::Red,
-            name: String::from("Cassiopée"),
-        };
-        Operator::new(
-            board,
-            Box::new(player),
-            Box::new(player_2),
-            Box::new(ConnectFourState::default()),
-        )
-    }
-
     fn create_3x3_game() -> Operator {
         let board = create_board_3x3().unwrap();
         let player_2 = TestPlayer {
