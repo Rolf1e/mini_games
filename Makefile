@@ -1,15 +1,12 @@
-lib:
-	cargo build
+intellij:
+	./mill mill.scalalib.GenIdea/idea
 
-test:
-	cargo test
+compile-server:
+	./mill server.compile
 
-fmt:
-	cargo fmt
+test-server:
+	./mill server.test
 
-clippy:
-	cargo clippy
-		
-vebugger:
-	cargo build
-	cp target/debug/connect-four-ai .
+compile: compile-server
+
+test: test-server
