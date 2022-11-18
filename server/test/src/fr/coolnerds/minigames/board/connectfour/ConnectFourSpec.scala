@@ -30,7 +30,8 @@ object ConnectFourSpec extends TestSuite {
       val yellow = TestPlayer[Case, ConnectFourAction, ConnectFourState](
         Seq(
           AddPonYellow(0)
-        )
+        ),
+        yellowPon
       )
       val red = TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq.empty)
       val game = ConnectFour(yellow, red)
@@ -49,8 +50,8 @@ object ConnectFourSpec extends TestSuite {
 
     test("Yellow and Red play") {
       val yellow =
-        TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq(AddPonYellow(0)), "Yellow")
-      val red = TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq(AddPonRed(0)), "Red")
+        TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq(AddPonYellow(0)), yellowPon)
+      val red = TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq(AddPonRed(0)), redPon)
       val game = ConnectFour(yellow, red)
       game.askAndPlayAction()
 
@@ -68,6 +69,30 @@ object ConnectFourSpec extends TestSuite {
                        |""".stripMargin
       val actual = game.draw()
       assert(expected == actual)
+    }
+
+    test("Yellow is a cheater, he is trying to play two times !") {
+      val yellow =
+        CheaterPlayer[Case, ConnectFourAction, ConnectFourState](
+          Seq(AddPonYellow(0), AddPonYellow(1)),
+          yellowPon
+        )
+      val red = TestPlayer[Case, ConnectFourAction, ConnectFourState](Seq(), redPon)
+      val game = ConnectFour(yellow, red)
+
+      game.askAndPlayAction()
+
+      val expected = """ |ConnectFour(E: 0 Y: 1 R: 2)
+                       ||0|0|0|0|0|0|0|
+                       ||0|0|0|0|0|0|0|
+                       ||0|0|0|0|0|0|0|
+                       ||0|0|0|0|0|0|0|
+                       ||0|0|0|0|0|0|0|
+                       ||0|0|0|0|0|0|0|
+                       |""".stripMargin
+      val actual = game.draw()
+      assert(expected == actual)
+
     }
 
   }

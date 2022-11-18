@@ -15,11 +15,28 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
   private var currentPlayer = yellow
 
   def askAndPlayAction(): Seq[State] = {
-    val states =
-      for (action <- currentPlayer.askAction(board)) // TODO: check player send only one action
-        yield board.play(action)
-    nextTurn()
-    states
+    checkActions() match {
+      case Some(action) => {
+        val state = board.play(action)
+        nextTurn()
+        Seq(state)
+      }
+      case None =>
+        if (currentPlayer.getColor() == yellowPon) Seq(YellowTurn(board)) else Seq(RedTurn(board))
+    }
+  }
+
+
+  /**
+    * At connect four, a player can do only one action.
+    */
+  private def checkActions(): Option[Action] = {
+    val actions = currentPlayer.askAction(board)
+    if (actions.size == 1) {
+      Some(actions(0))
+    } else {
+      None
+    }
   }
 
   def at(coordinates: Coordinates): Option[Case] = board.at(coordinates)
