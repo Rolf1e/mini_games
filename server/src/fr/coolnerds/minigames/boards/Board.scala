@@ -1,6 +1,6 @@
 package fr.coolnerds.minigames.boards
 
-trait Board[Case, Action, State] {
+trait Board[Case] {
 
   def draw(): String
 

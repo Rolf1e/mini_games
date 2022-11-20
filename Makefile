@@ -1,3 +1,5 @@
+compile: compile-server
+
 intellij:
 	./mill mill.scalalib.GenIdea/idea
 
@@ -7,6 +9,5 @@ compile-server:
 test-server:
 	./mill server.test
 
-compile: compile-server
 
 test: test-server

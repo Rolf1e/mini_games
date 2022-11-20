@@ -1,15 +1,10 @@
-package fr.coolnerds.minigames.boards.connectfour
+package fr.coolnerds.minigames.engine
 
-import fr.coolnerds.minigames.boards.connectfour.ConnectFour.{InternalBoard, InternalPlayer}
+import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
 import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard._
-import fr.coolnerds.minigames.boards.connectfour.ConnectFourConstants.{
-  Action,
-  Case,
-  State,
-  redPon,
-  yellowPon
-}
-import fr.coolnerds.minigames.boards.{Board, Coordinates, Player}
+import fr.coolnerds.minigames.engine.ConnectFourConstants.{Case, redPon, yellowPon}
+import fr.coolnerds.minigames.boards.{Board, Coordinates, Player, State, Action}
+import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard
 
 class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPlayer) {
   private var currentPlayer = yellow
@@ -25,7 +20,6 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
         if (currentPlayer.getColor() == yellowPon) Seq(YellowTurn(board)) else Seq(RedTurn(board))
     }
   }
-
 
   /**
     * At connect four, a player can do only one action.
@@ -53,8 +47,8 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
 
 object ConnectFour {
 
-  type InternalPlayer = Player[Case, Action, State]
-  type InternalBoard = Board[Case, Action, State]
+  type InternalPlayer = Player[Case]
+  type InternalBoard = Board[Case]
 
   def apply(yellow: InternalPlayer, red: InternalPlayer): ConnectFour = {
     new ConnectFour(ConnectFourBoard.emptyBoard(), yellow, red)
@@ -64,19 +58,17 @@ object ConnectFour {
 
 object ConnectFourConstants {
   type Case = Int
-  type Action = ConnectFourAction
-  type State = ConnectFourState
 
   val yellowPon = 1
   val redPon = 2
 }
 
-sealed trait ConnectFourAction {}
+sealed trait ConnectFourAction extends Action {}
 
 case class AddPonYellow(col: Int) extends ConnectFourAction
 case class AddPonRed(col: Int) extends ConnectFourAction
 
-sealed trait ConnectFourState {}
+sealed trait ConnectFourState extends State {}
 
 case class YellowTurn(board: InternalBoard) extends ConnectFourState
 case class RedTurn(board: InternalBoard) extends ConnectFourState

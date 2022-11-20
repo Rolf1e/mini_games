@@ -1,9 +1,9 @@
 package fr.coolnerds.minigames.boards
 
-trait Player[Case, Action, State] {
+trait Player[Case] {
 
-  def askAction(board: Board[Case, Action, State]): Seq[Action]
-  
+  def askAction(board: Board[Case]): Seq[Action]
+
   def getColor(): Int
 
 }

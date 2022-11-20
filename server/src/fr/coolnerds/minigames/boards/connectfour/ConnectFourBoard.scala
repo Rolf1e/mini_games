@@ -1,8 +1,9 @@
 package fr.coolnerds.minigames.boards.connectfour
 
 import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard.{columnLength, rowLength}
-import fr.coolnerds.minigames.boards.connectfour.ConnectFourConstants._
-import fr.coolnerds.minigames.boards.{Board, Coordinates, Point2D}
+import fr.coolnerds.minigames.boards.{Board, Coordinates, Point2D, Action, State}
+import fr.coolnerds.minigames.engine.ConnectFourConstants._
+import fr.coolnerds.minigames.engine.{AddPonRed, AddPonYellow, RedTurn, YellowTurn, Won}
 
 import scala.collection.mutable
 
@@ -19,7 +20,7 @@ import scala.collection.mutable
   */
 private[connectfour] case class ConnectFourBoard(
     cases: mutable.ArrayDeque[Case]
-) extends Board[Case, Action, State] {
+) extends Board[Case] {
 
   override def at(coo: Coordinates): Option[Case] = coo match {
     case Point2D(x, y) => Some(cases((rowLength - 1) * y + x))
