@@ -1,13 +1,12 @@
-compile: compile-server
-
-intellij:
-	./mill mill.scalalib.GenIdea/idea
+# === COMPILATION ===
+compile: 
+	./mill __.compile
 
 compile-server:
 	./mill server.compile
 
+# === TEST ===
+test: test-server
+
 test-server:
 	./mill server.test
-
-
-test: test-server

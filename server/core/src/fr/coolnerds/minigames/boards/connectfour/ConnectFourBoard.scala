@@ -1,6 +1,5 @@
 package fr.coolnerds.minigames.boards.connectfour
 
-import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard.{columnLength, rowLength}
 import fr.coolnerds.minigames.boards.{Board, Coordinates, Point2D, Action, State}
 import fr.coolnerds.minigames.engine.ConnectFourConstants._
 import fr.coolnerds.minigames.engine.{AddPonRed, AddPonYellow, RedTurn, YellowTurn, Won}
@@ -70,9 +69,6 @@ private[connectfour] case class ConnectFourBoard(
 }
 
 object ConnectFourBoard {
-
-  val rowLength = 7
-  val columnLength = 6
 
   def emptyBoard(): ConnectFourBoard = {
     ConnectFourBoard(mutable.ArrayDeque.fill(rowLength * columnLength)(0))
