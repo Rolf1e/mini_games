@@ -32,7 +32,7 @@ private[connectfour] case class ConnectFourBoard(
   }
 
   private def playAt(color: Case, col: Int): State = {
-    isWon match {
+    isStateWon() match {
       case Won(color) => Won(color)
       case YellowTurn(_) | RedTurn(_) => {
         findRow(col) match {
@@ -53,7 +53,9 @@ private[connectfour] case class ConnectFourBoard(
       .map(_._2)
   }
 
-  private def isWon: State = RedTurn(this)
+  def isStateWon(): State = RedTurn(this) // TODO
+
+  def isWon(): Boolean = false // TODO
 
   override def draw(): String = {
     var map = ""

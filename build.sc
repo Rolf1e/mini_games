@@ -11,7 +11,7 @@ object server extends ScalaModule with ScalafmtModule {
 
   object engine_connectfour extends ScalaModule with ScalafmtModule {
     def scalaVersion = globalScalaVersion
-    def mainClass = Some("engine_connectfour.Main")
+    def mainClass = Some("connectfour.Main")
     def moduleDeps = Seq(core)
   }
 

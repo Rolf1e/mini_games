@@ -39,6 +39,8 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
     }
   }
 
+  override def isWon(): Boolean = board.isWon()
+
   def at(coordinates: Coordinates): Option[Case] = board.at(coordinates)
 
   def draw(): String = {
@@ -101,9 +103,9 @@ object ConnectFourParser {
     override def parse(input: String): Either[String, Column] = {
       try {
         val column = input.toInt
-        if (0 <= column && column < columnLength) {
+        if (1 <= column && column <= columnLength) {
           Right(column)
-        } else Left(s"Column must be between 0 and $columnLength")
+        } else Left(s"Column must be between 1 and $columnLength")
       } catch {
         case nan: java.lang.NumberFormatException => Left(s"$input is not a number !")
       }
