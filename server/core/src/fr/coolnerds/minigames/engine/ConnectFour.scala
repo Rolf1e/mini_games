@@ -1,16 +1,13 @@
 package fr.coolnerds.minigames.engine
 
-import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
-import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard._
-import fr.coolnerds.minigames.engine.ConnectFourConstants.{columnLength, Case, redPon, yellowPon}
-import fr.coolnerds.minigames.boards.{Board, Coordinates, State, Action}
-import fr.coolnerds.minigames.players.Player
 import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard
+import fr.coolnerds.minigames.boards.{Action, Board, Coordinates, State}
+import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
+import fr.coolnerds.minigames.engine.ConnectFourConstants.{Case, columnLength, lineSeparator, redPon, yellowPon}
+import fr.coolnerds.minigames.players.Player
 
 import scala.io.StdIn.readLine
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
+import scala.util.{Failure, Properties, Success, Try}
 
 class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPlayer)
     extends Engine {
@@ -34,17 +31,17 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
     */
   private def checkActions(): Option[Action] = {
     currentPlayer.askAction(board) match {
-      case Right(actions) if actions.size == 1 => Some(actions(0))
+      case Right(actions) if actions.size == 1 => Some(actions.head)
       case _                                   => None
     }
   }
 
-  override def isWon(): Boolean = board.isWon()
+  override def isWon: Boolean = board.isWon
 
   def at(coordinates: Coordinates): Option[Case] = board.at(coordinates)
 
   def draw(): String = {
-    s"ConnectFour(E: 0 Y: ${yellowPon} R: ${redPon})\n${board.draw()}"
+    s"ConnectFour(E: 0 Y: ${yellowPon} R: ${redPon})$lineSeparator${board.draw()}"
   }
 
   private def nextTurn(): Unit = {
@@ -73,6 +70,8 @@ object ConnectFourConstants {
   val rowLength = 7
   val columnLength = 6
 
+  val lineSeparator: String = Properties.lineSeparator
+
 }
 
 sealed trait ConnectFourAction extends Action {}
@@ -93,7 +92,7 @@ object ConnectFourParser {
 
   def parseFromConsole[T](implicit parser: ConnectFourParser[T]): Either[String, T] = {
     Try(readLine()) match {
-      case Failure(exception) => Left(exception.getMessage())
+      case Failure(exception) => Left(exception.getMessage)
       case Success(input)     => parser.parse(input)
     }
   }
@@ -103,7 +102,7 @@ object ConnectFourParser {
     override def parse(input: String): Either[String, Column] = {
       try {
         val column = input.toInt
-        if (1 <= column && column <= columnLength) {
+        if (column >= 1 && column <= columnLength) {
           Right(column)
         } else Left(s"Column must be between 1 and $columnLength")
       } catch {

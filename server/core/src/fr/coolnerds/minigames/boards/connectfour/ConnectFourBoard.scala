@@ -32,7 +32,7 @@ private[connectfour] case class ConnectFourBoard(
   }
 
   private def playAt(color: Case, col: Int): State = {
-    isStateWon() match {
+    isStateWon match {
       case Won(color) => Won(color)
       case YellowTurn(_) | RedTurn(_) => {
         findRow(col) match {
@@ -48,21 +48,20 @@ private[connectfour] case class ConnectFourBoard(
   private def findRow(col: Int): Option[Int] = {
     cases.zipWithIndex.view
       .filter { case (_, i) => i % rowLength == col }
-      .filter { case (c, _) => c == 0 }
-      .headOption
+      .find { case (c, _) => c == 0 }
       .map(_._2)
   }
 
-  def isStateWon(): State = RedTurn(this) // TODO
+  def isStateWon: State = RedTurn(this) // TODO
 
-  def isWon(): Boolean = false // TODO
+  override def isWon: Boolean = false // TODO
 
   override def draw(): String = {
     var map = ""
     var row = ""
     for ((c, i) <- cases.zipWithIndex.reverse) {
       if (i % rowLength == 0) {
-        map += s"|${c}|${row}\n"
+        map += s"|${c}|${row}$lineSeparator"
         row = ""
       } else { row = s"${c}|" + row }
     }

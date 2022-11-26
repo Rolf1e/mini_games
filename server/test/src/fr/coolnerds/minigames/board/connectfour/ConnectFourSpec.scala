@@ -1,7 +1,5 @@
 package fr.coolnerds.minigames.board.connectfour
 
-import fr.coolnerds.minigames.board.connectfour.Common.fail
-import fr.coolnerds.minigames.boards.Point2D
 import fr.coolnerds.minigames.engine.ConnectFourConstants.{Case, redPon, yellowPon}
 import fr.coolnerds.minigames.engine._
 import utest._
@@ -27,12 +25,7 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow plays col 0") {
-      val yellow = TestPlayer[Case](
-        Seq(
-          AddPonYellow(0)
-        ),
-        yellowPon
-      )
+      val yellow = TestPlayer[Case](Seq(AddPonYellow(0)), yellowPon)
       val red = TestPlayer[Case](Seq.empty)
       val game = ConnectFour(yellow, red)
       game.askAndPlayAction()
@@ -49,8 +42,7 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow and Red play") {
-      val yellow =
-        TestPlayer[Case](Seq(AddPonYellow(0)), yellowPon)
+      val yellow = TestPlayer[Case](Seq(AddPonYellow(0)), yellowPon)
       val red = TestPlayer[Case](Seq(AddPonRed(0)), redPon)
       val game = ConnectFour(yellow, red)
       game.askAndPlayAction()
@@ -72,11 +64,7 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow is a cheater, he is trying to play two times !") {
-      val yellow =
-        CheaterPlayer[Case](
-          Seq(AddPonYellow(0), AddPonYellow(1)),
-          yellowPon
-        )
+      val yellow = CheaterPlayer[Case](Seq(AddPonYellow(0), AddPonYellow(1)), yellowPon)
       val red = TestPlayer[Case](Seq(), redPon)
       val game = ConnectFour(yellow, red)
 
@@ -92,7 +80,6 @@ object ConnectFourSpec extends TestSuite {
                        |""".stripMargin
       val actual = game.draw()
       assert(expected == actual)
-
     }
 
   }
