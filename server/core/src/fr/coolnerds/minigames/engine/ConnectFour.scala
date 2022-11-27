@@ -3,7 +3,7 @@ package fr.coolnerds.minigames.engine
 import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard
 import fr.coolnerds.minigames.boards.{Action, Board, Coordinates, State}
 import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
-import fr.coolnerds.minigames.engine.ConnectFourConstants.{Case, columnLength, lineSeparator, redPon, yellowPon}
+import fr.coolnerds.minigames.engine.ConnectFourConstants._
 import fr.coolnerds.minigames.players.Player
 
 import scala.io.StdIn.readLine
@@ -22,7 +22,7 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
         Seq(state)
       }
       case None =>
-        if (currentPlayer.getColor() == yellowPon) Seq(YellowTurn(board)) else Seq(RedTurn(board))
+        if (currentPlayer.getColor == yellowPon) Seq(YellowTurn(board)) else Seq(RedTurn(board))
     }
   }
 
@@ -74,39 +74,43 @@ object ConnectFourConstants {
 
 }
 
-sealed trait ConnectFourAction extends Action {}
-
+sealed trait ConnectFourAction extends Action
 case class AddPonYellow(col: Int) extends ConnectFourAction
 case class AddPonRed(col: Int) extends ConnectFourAction
 
-sealed trait ConnectFourState extends State {}
-
+sealed trait ConnectFourState extends State
 case class YellowTurn(board: InternalBoard) extends ConnectFourState
 case class RedTurn(board: InternalBoard) extends ConnectFourState
 case class Won(color: Int) extends ConnectFourState
 
-trait ConnectFourParser[T] extends InputParser[T] {}
+sealed trait ConnectFourException extends MiniGamesException
+case class ReadInput(message: String) extends ConnectFourException
+case class NaN(message: String) extends ConnectFourException
+case class BadColumnIndex(message: String) extends ConnectFourException
+
+trait ConnectFourParser[T] extends InputParser[T]
 
 object ConnectFourParser {
-  type Column = Int
 
-  def parseFromConsole[T](implicit parser: ConnectFourParser[T]): Either[String, T] = {
+  def parseFromConsole[T](
+      implicit parser: ConnectFourParser[T]
+  ): Either[MiniGamesException, T] = {
     Try(readLine()) match {
-      case Failure(exception) => Left(exception.getMessage)
+      case Failure(exception) => Left(ReadInput(exception.getMessage))
       case Success(input)     => parser.parse(input)
     }
   }
 
-  implicit object ColumnParser extends ConnectFourParser[Column] {
+  implicit object ColumnParser extends ConnectFourParser[Case] {
 
-    override def parse(input: String): Either[String, Column] = {
+    override def parse(input: String): Either[MiniGamesException, Case] = {
       try {
         val column = input.toInt
-        if (column >= 0 && column < columnLength) {
+        if (column >= 0 && column < rowLength) {
           Right(column)
-        } else Left(s"Column must be between 1 and $columnLength")
+        } else Left(BadColumnIndex(s"Column must be between 0 and ${rowLength - 1}"))
       } catch {
-        case nan: java.lang.NumberFormatException => Left(s"$input is not a number !")
+        case _: java.lang.NumberFormatException => Left(NaN(input))
       }
     }
 

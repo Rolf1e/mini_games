@@ -36,16 +36,15 @@ private[connectfour] case class ConnectFourBoard(
   private def playAt(color: Case, col: Int): State = {
     isStateWon match {
       case Won(color) => Won(color)
-      case YellowTurn(_) | RedTurn(_) => {
+      case YellowTurn(_) | RedTurn(_) =>
         findRow(col) match {
           case Some(row) => {
             cases(row * rowLength + col) = color
+            if (color == yellowPon) RedTurn(this) else YellowTurn(this)
           }
-          case None => // Player can not play in this column
-            return if (color == yellowPon) YellowTurn(this) else RedTurn(this)
+          // Player can not play in this column
+          case None => if (color == yellowPon) YellowTurn(this) else RedTurn(this)
         }
-        if (color == yellowPon) RedTurn(this) else YellowTurn(this)
-      }
     }
   }
 

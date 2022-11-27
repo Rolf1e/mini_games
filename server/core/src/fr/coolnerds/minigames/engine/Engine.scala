@@ -5,3 +5,5 @@ trait Engine {
   def isWon: Boolean
 
 }
+
+trait MiniGamesException extends Exception
