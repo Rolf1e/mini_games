@@ -1,4 +1,4 @@
-package fr.coolnerds.minigames.board.connectfour
+package fr.coolnerds.minigames.common
 
 object Common {
 

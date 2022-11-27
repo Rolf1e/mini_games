@@ -102,7 +102,7 @@ object ConnectFourParser {
     override def parse(input: String): Either[String, Column] = {
       try {
         val column = input.toInt
-        if (column >= 1 && column <= columnLength) {
+        if (column >= 0 && column < columnLength) {
           Right(column)
         } else Left(s"Column must be between 1 and $columnLength")
       } catch {

@@ -7,11 +7,8 @@ object Main extends App {
   val yellow = ConsolePlayer[Case]("Tigran", yellowPon)
   val red = ConsolePlayer[Case]("Cassiopee", redPon)
   val game = ConnectFour(yellow, red)
-  val maxTurn = 3
 
-  var turn = 1
-  while (turn <= maxTurn && !game.isWon) {
-    turn += 1
+  while (!game.isWon) {
     game.askAndPlayAction()
   }
 

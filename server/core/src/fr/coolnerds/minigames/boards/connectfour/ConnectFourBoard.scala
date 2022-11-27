@@ -1,8 +1,8 @@
 package fr.coolnerds.minigames.boards.connectfour
 
-import fr.coolnerds.minigames.boards.{Board, Coordinates, Point2D, Action, State}
+import fr.coolnerds.minigames.boards._
 import fr.coolnerds.minigames.engine.ConnectFourConstants._
-import fr.coolnerds.minigames.engine.{AddPonRed, AddPonYellow, RedTurn, YellowTurn, Won}
+import fr.coolnerds.minigames.engine._
 
 import scala.collection.mutable
 
@@ -18,7 +18,9 @@ import scala.collection.mutable
   * - Find row from a given column
   */
 private[connectfour] case class ConnectFourBoard(
-    cases: mutable.ArrayDeque[Case]
+    cases: mutable.ArrayDeque[Case],
+    rowLength: Int,
+    columnLength: Int
 ) extends Board[Case] {
 
   override def at(coo: Coordinates): Option[Case] = coo match {
@@ -36,7 +38,9 @@ private[connectfour] case class ConnectFourBoard(
       case Won(color) => Won(color)
       case YellowTurn(_) | RedTurn(_) => {
         findRow(col) match {
-          case Some(row) => cases(row + col) = color
+          case Some(row) => {
+            cases(row * rowLength + col) = color
+          }
           case None => // Player can not play in this column
             return if (color == yellowPon) YellowTurn(this) else RedTurn(this)
         }
@@ -45,9 +49,11 @@ private[connectfour] case class ConnectFourBoard(
     }
   }
 
-  private def findRow(col: Int): Option[Int] = {
+  private[connectfour] def findRow(col: Int): Option[Int] = {
     cases.zipWithIndex.view
       .filter { case (_, i) => i % rowLength == col }
+      .map(_._1)
+      .zipWithIndex
       .find { case (c, _) => c == 0 }
       .map(_._2)
   }
@@ -72,6 +78,10 @@ private[connectfour] case class ConnectFourBoard(
 object ConnectFourBoard {
 
   def emptyBoard(): ConnectFourBoard = {
-    ConnectFourBoard(mutable.ArrayDeque.fill(rowLength * columnLength)(0))
+    ConnectFourBoard(
+      mutable.ArrayDeque.fill(rowLength * columnLength)(0),
+      rowLength,
+      columnLength
+    )
   }
 }

@@ -1,7 +1,6 @@
-package fr.coolnerds.minigames.board.connectfour
+package fr.coolnerds.minigames.common
 
-import fr.coolnerds.minigames.boards.Action
-import fr.coolnerds.minigames.boards.Board
+import fr.coolnerds.minigames.boards.{Action, Board}
 import fr.coolnerds.minigames.players.Player
 
 case class TestPlayer[Case](actions: Seq[Action], color: Int = 0)
