@@ -17,9 +17,8 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
   def askAndPlayAction(): Seq[State] = {
     checkActions() match {
       case Some(action) => {
-        val state = board.play(action)
+        board.play(action)
         nextTurn()
-        Seq(state)
       }
       case None =>
         if (currentPlayer.getColor == yellowPon) Seq(YellowTurn(board)) else Seq(RedTurn(board))
@@ -36,7 +35,7 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
     }
   }
 
-  override def isWon: Boolean = board.isWon
+  override def isWon: State = ???
 
   def at(coordinates: Coordinates): Option[Case] = board.at(coordinates)
 

@@ -8,6 +8,6 @@ trait Board[Case] {
 
   def at(coordinates: Coordinates): Option[Case]
 
-  def play(action: Action): State
+  def play(action: Action): Unit
 
 }

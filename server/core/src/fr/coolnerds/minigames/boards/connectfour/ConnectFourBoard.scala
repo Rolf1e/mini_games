@@ -31,23 +31,17 @@ private[connectfour] case class ConnectFourBoard(
     case _             => None
   }
 
-  override def play(action: Action): State = action match {
+  override def play(action: Action): Unit = action match {
     case AddPonYellow(col) => playAt(yellowPon, col)
     case AddPonRed(col)    => playAt(redPon, col)
   }
 
-  private def playAt(color: Case, col: Int): State = {
-    isStateWon match {
-      case Won(color) => Won(color)
-      case YellowTurn(_) | RedTurn(_) =>
-        findRow(col) match {
-          case Some(row) => {
-            cases(row * rowLength + col) = color
-            if (color == yellowPon) RedTurn(this) else YellowTurn(this)
-          }
-          // Player can not play in this column
-          case None => if (color == yellowPon) YellowTurn(this) else RedTurn(this)
-        }
+  private def playAt(color: Case, col: Int): Unit = {
+    if (!isFull && !isWon)  {
+      findRow(col) match {
+        case Some(row) => cases(row * rowLength + col) = color
+        case None =>  // Player can not play in this column
+      }
     }
   }
 
@@ -60,15 +54,7 @@ private[connectfour] case class ConnectFourBoard(
       .map(_._2)
   }
 
-  def isStateWon: State = {
-    implicit val bitBoard: ConnectFourBoard = this
-    (BitBoardOps.checkHasWin(yellowPon), BitBoardOps.checkHasWin(redPon)) match {
-      case (false, false) =>
-      case (true, _)              => Won(yellowPon)
-      case (_, true)              => Won(redPon)
-
-    }
-  }
+  private def isFull: Boolean = ???
 
   override def isWon: Boolean = {
     implicit val bitBoard: ConnectFourBoard = this

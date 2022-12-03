@@ -1,8 +1,10 @@
 package fr.coolnerds.minigames.engine
 
+import fr.coolnerds.minigames.boards.State
+
 trait Engine {
 
-  def isWon: Boolean
+  def isWon: State
 
 }
 
