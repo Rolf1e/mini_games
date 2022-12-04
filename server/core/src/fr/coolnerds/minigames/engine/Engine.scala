@@ -1,11 +1,11 @@
 package fr.coolnerds.minigames.engine
 
-import fr.coolnerds.minigames.boards.State
-
 trait Engine {
+  def askAndPlayAction(): Unit
+}
 
-  def isWon: State
-
+trait EngineStateOps {
+  def state: State
 }
 
 trait MiniGamesException extends Exception

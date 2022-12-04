@@ -20,7 +20,7 @@ object ConnectFourSpec extends TestSuite {
                        ||0|0|0|0|0|0|0|
                        ||0|0|0|0|0|0|0|
                        |""".stripMargin
-      val actual = game.draw()
+      val actual = game.draw
       assert(expected == actual)
     }
 
@@ -37,7 +37,7 @@ object ConnectFourSpec extends TestSuite {
                        ||0|0|0|0|0|0|0|
                        ||1|0|0|0|0|0|0|
                        |""".stripMargin
-      val actual = game.draw()
+      val actual = game.draw
       assert(expected == actual)
     }
 
@@ -47,7 +47,7 @@ object ConnectFourSpec extends TestSuite {
       val game = ConnectFour(yellow, red)
       game.askAndPlayAction()
 
-      println(game.draw())
+      println(game.draw)
 
       game.askAndPlayAction()
 
@@ -59,7 +59,7 @@ object ConnectFourSpec extends TestSuite {
                        ||0|2|0|0|0|0|0|
                        ||0|1|0|0|0|0|0|
                        |""".stripMargin
-      val actual = game.draw()
+      val actual = game.draw
       assert(expected == actual)
     }
 
@@ -78,7 +78,7 @@ object ConnectFourSpec extends TestSuite {
                        ||0|0|0|0|0|0|0|
                        ||0|0|0|0|0|0|0|
                        |""".stripMargin
-      val actual = game.draw()
+      val actual = game.draw
       assert(expected == actual)
     }
 

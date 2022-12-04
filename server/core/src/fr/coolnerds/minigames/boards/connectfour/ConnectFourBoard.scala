@@ -2,6 +2,7 @@ package fr.coolnerds.minigames.boards.connectfour
 
 import fr.coolnerds.minigames.boards._
 import fr.coolnerds.minigames.boards.connectfour.BitBoard.createBitBoardWithLength
+import fr.coolnerds.minigames.components.Drawable
 import fr.coolnerds.minigames.engine.ConnectFourConstants._
 import fr.coolnerds.minigames.engine._
 
@@ -18,11 +19,13 @@ import scala.collection.mutable
   * - We access (1, 2) with cases((rowLength * 1) y + x)
   * - Find row from a given column
   */
-private[connectfour] case class ConnectFourBoard(
+case class ConnectFourBoard(
     cases: mutable.ArrayDeque[Case],
     rowLength: Int,
     columnLength: Int
-) extends Board[Case] {
+) extends Board[Case]
+    with BoardOps[Case]
+    with Drawable {
 
   private[connectfour] def copyCases: Seq[Case] = cases.toSeq
 
@@ -37,24 +40,30 @@ private[connectfour] case class ConnectFourBoard(
   }
 
   private def playAt(color: Case, col: Int): Unit = {
-    if (!isFull && !isWon)  {
-      findRow(col) match {
+    if (!isWon) {
+      findRowIndex(col) match {
         case Some(row) => cases(row * rowLength + col) = color
-        case None =>  // Player can not play in this column
+        case None      => // Player can not play in this column
       }
     }
   }
 
-  private[connectfour] def findRow(col: Int): Option[Int] = {
+  private[connectfour] def findRowIndex(col: Int): Option[Int] = {
     cases.zipWithIndex.view
       .filter { case (_, i) => i % rowLength == col }
-      .map(_._1)
+      .map(_._1) // We reset the index to have row indexes
       .zipWithIndex
+      .view
       .find { case (c, _) => c == 0 }
       .map(_._2)
   }
 
-  private def isFull: Boolean = ???
+  override def isFull: Boolean = {
+    val caseAtZeroOnTopRow = cases.zipWithIndex.view
+      .filter { case (_, i) => i % columnLength == rowLength - 1 }
+      .count { case (c, _) => c == 0 }
+    caseAtZeroOnTopRow == 0
+  }
 
   override def isWon: Boolean = {
     implicit val bitBoard: ConnectFourBoard = this
@@ -64,7 +73,7 @@ private[connectfour] case class ConnectFourBoard(
     }
   }
 
-  override def draw(): String = {
+  override def draw: String = {
     var map = ""
     var row = ""
     for ((c, i) <- cases.zipWithIndex.reverse) {
@@ -106,9 +115,9 @@ private[connectfour] object BitBoardOps {
 
 }
 
-case class BitBoard(board: Long, lastIndex: Int)
+private case class BitBoard(board: Long, lastIndex: Int)
 
-private[connectfour] object BitBoard {
+private object BitBoard {
 
   private val emptyCase = 0
 

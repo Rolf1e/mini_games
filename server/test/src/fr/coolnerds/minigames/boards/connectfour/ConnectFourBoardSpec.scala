@@ -8,6 +8,23 @@ import scala.collection.mutable
 object ConnectFourBoardSpec extends TestSuite {
   override def tests: Tests = Tests {
 
+    test("Assert board is full") {
+      val rowLength = 3
+      val colLength = 3
+      test("board is full") {
+        val board =
+          ConnectFourBoard(mutable.ArrayDeque(1, 2, 1, 2, 1, 2, 1, 2, 1), rowLength, colLength)
+        assert(board.isFull)
+      }
+
+      test("board is not full") {
+        val board =
+          ConnectFourBoard(mutable.ArrayDeque(1, 2, 1, 2, 1, 2, 1, 2, 0), rowLength, colLength)
+        assert(!board.isFull)
+      }
+
+    }
+
     test("Find row from column") {
       val rowLength = 3
       val colLength = 3
@@ -57,7 +74,7 @@ object ConnectFourBoardSpec extends TestSuite {
       expectedRow: Int,
       board: ConnectFourBoard
   ): Unit = {
-    board.findRow(col) match {
+    board.findRowIndex(col) match {
       case Some(actualRow) => {
         if (expectedRow != actualRow) println(board.draw())
         assert(expectedRow == actualRow)

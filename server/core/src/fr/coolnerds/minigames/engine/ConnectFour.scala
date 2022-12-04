@@ -1,7 +1,8 @@
 package fr.coolnerds.minigames.engine
 
 import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard
-import fr.coolnerds.minigames.boards.{Action, Board, Coordinates, State}
+import fr.coolnerds.minigames.boards.Action
+import fr.coolnerds.minigames.components.{Drawable, InputParser}
 import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
 import fr.coolnerds.minigames.engine.ConnectFourConstants._
 import fr.coolnerds.minigames.players.Player
@@ -10,11 +11,13 @@ import scala.io.StdIn.readLine
 import scala.util.{Failure, Properties, Success, Try}
 
 class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPlayer)
-    extends Engine {
+    extends Engine
+    with EngineStateOps
+    with Drawable {
 
   private var currentPlayer = yellow
 
-  def askAndPlayAction(): Seq[State] = {
+  override def askAndPlayAction(): Unit = {
     checkActions() match {
       case Some(action) => {
         board.play(action)
@@ -35,12 +38,20 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
     }
   }
 
-  override def isWon: State = ???
+  override def state: ConnectFourState = {
+    if (board.isWon) {
+      Won(currentPlayer.getColor)
+    } else if (board.isFull) {
+      Draw()
+    } else if (currentPlayer.getColor == yellowPon) {
+      RedTurn(board)
+    } else {
+      YellowTurn(board)
+    }
+  }
 
-  def at(coordinates: Coordinates): Option[Case] = board.at(coordinates)
-
-  def draw(): String = {
-    s"ConnectFour(E: 0 Y: ${yellowPon} R: ${redPon})$lineSeparator${board.draw()}"
+  override def draw: String = {
+    s"ConnectFour(E: 0 Y: ${yellowPon} R: ${redPon})$lineSeparator${board.draw}"
   }
 
   private def nextTurn(): Unit = {
@@ -50,14 +61,12 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
 }
 
 object ConnectFour {
-
   type InternalPlayer = Player[Case]
-  type InternalBoard = Board[Case]
+  type InternalBoard = ConnectFourBoard
 
   def apply(yellow: InternalPlayer, red: InternalPlayer): ConnectFour = {
     new ConnectFour(ConnectFourBoard.emptyBoard(), yellow, red)
   }
-
 }
 
 object ConnectFourConstants {
@@ -70,7 +79,6 @@ object ConnectFourConstants {
   val columnLength = 6
 
   val lineSeparator: String = Properties.lineSeparator
-
 }
 
 sealed trait ConnectFourAction extends Action
@@ -81,6 +89,10 @@ sealed trait ConnectFourState extends State
 case class YellowTurn(board: InternalBoard) extends ConnectFourState
 case class RedTurn(board: InternalBoard) extends ConnectFourState
 case class Won(color: Int) extends ConnectFourState
+class Draw private () extends ConnectFourState
+object Draw {
+  def apply(): Draw = new Draw()
+}
 
 sealed trait ConnectFourException extends MiniGamesException
 case class ReadInput(message: String) extends ConnectFourException
