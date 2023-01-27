@@ -2,7 +2,7 @@ package fr.coolnerds.minigames.common
 
 import fr.coolnerds.minigames.boards.Action
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.engine.MiniGamesException
+import fr.coolnerds.minigames.engines.MiniGamesException
 import fr.coolnerds.minigames.players.Player
 
 case class TestPlayer[Case](actions: Seq[Action], color: Int = 0) extends Player[Case] {

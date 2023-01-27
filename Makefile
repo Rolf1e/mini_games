@@ -11,6 +11,12 @@ test: test-server
 test-server:
 	./mill server.test
 
-# === TOOLING
+# === TOOLING ===
 intellij: 
 	./mill mill.scalalib.GenIdea/idea
+
+# === DOCKER ===
+docker-database:
+    docker compose up -d
+
+docker: docker-database

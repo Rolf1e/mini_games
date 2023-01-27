@@ -1,5 +1,5 @@
-import fr.coolnerds.minigames.engine.{ConnectFour, ConnectFourState, Draw, RedTurn, Won, YellowTurn}
-import fr.coolnerds.minigames.engine.ConnectFourConstants._
+import fr.coolnerds.minigames.engines.{ConnectFour, ConnectFourState, Draw, RedTurn, Won, YellowTurn}
+import fr.coolnerds.minigames.engines.ConnectFourConstants._
 import fr.coolnerds.minigames.players.ConsolePlayer
 
 object Main extends App {

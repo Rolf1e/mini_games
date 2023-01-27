@@ -1,5 +1,6 @@
 package fr.coolnerds.minigames.boards.connectfour
 
+import fr.coolnerds.minigames.boards.ConnectFourBoard
 import fr.coolnerds.minigames.common.Common
 import utest.{TestSuite, Tests, assert, test}
 

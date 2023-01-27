@@ -1,7 +1,7 @@
-package fr.coolnerds.minigames.engine
+package fr.coolnerds.minigames.engines
 
 import fr.coolnerds.minigames.common.{CheaterPlayer, TestPlayer}
-import fr.coolnerds.minigames.engine.ConnectFourConstants.{Case, redPon, yellowPon}
+import fr.coolnerds.minigames.engines.ConnectFourConstants.{Case, redPon, yellowPon}
 import utest.{TestSuite, Tests, assert, test}
 
 object ConnectFourSpec extends TestSuite {
