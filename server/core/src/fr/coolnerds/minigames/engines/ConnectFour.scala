@@ -1,12 +1,12 @@
-package fr.coolnerds.minigames.engine
+package fr.coolnerds.minigames.engines
 
-import fr.coolnerds.minigames.boards.connectfour.ConnectFourBoard
-import fr.coolnerds.minigames.boards.Action
+import fr.coolnerds.minigames.boards.{Action, ConnectFourBoard}
 import fr.coolnerds.minigames.components.{Drawable, InputParser}
-import fr.coolnerds.minigames.engine.ConnectFour.{InternalBoard, InternalPlayer}
-import fr.coolnerds.minigames.engine.ConnectFourConstants._
+import fr.coolnerds.minigames.engines.ConnectFour.{InternalBoard, InternalPlayer}
+import fr.coolnerds.minigames.engines.ConnectFourConstants._
 import fr.coolnerds.minigames.players.Player
 
+import scala.concurrent.Future
 import scala.io.StdIn.readLine
 import scala.util.{Failure, Properties, Success, Try}
 
@@ -58,6 +58,7 @@ class ConnectFour(board: InternalBoard, yellow: InternalPlayer, red: InternalPla
     currentPlayer = if (currentPlayer == yellow) red else yellow
   }
 
+  override def save(): Future[State] = ???
 }
 
 object ConnectFour {
@@ -94,10 +95,10 @@ object Draw {
   def apply(): Draw = new Draw()
 }
 
-sealed trait ConnectFourException extends MiniGamesException
-case class ReadInput(message: String) extends ConnectFourException
-case class NaN(message: String) extends ConnectFourException
-case class BadColumnIndex(message: String) extends ConnectFourException
+abstract class ConnectFourException(message: String) extends InGameException(message)
+case class ReadInput(message: String) extends ConnectFourException(message)
+case class NaN(message: String) extends ConnectFourException(message)
+case class BadColumnIndex(message: String) extends ConnectFourException(message)
 
 trait ConnectFourParser[T] extends InputParser[T]
 
@@ -115,13 +116,14 @@ object ConnectFourParser {
   implicit object ColumnParser extends ConnectFourParser[Case] {
 
     override def parse(input: String): Either[MiniGamesException, Case] = {
-      try {
-        val column = input.toInt
-        if (column >= 0 && column < rowLength) {
-          Right(column)
-        } else Left(BadColumnIndex(s"Column must be between 0 and ${rowLength - 1}"))
-      } catch {
-        case _: java.lang.NumberFormatException => Left(NaN(input))
+      Try(input.toInt) match {
+        case Failure(e) =>
+          e match {
+            case _: NumberFormatException => Left(NaN(input))
+          }
+        case Success(column) =>
+          if (column >= 0 && column < rowLength) Right(column)
+          else Left(BadColumnIndex(s"Column must be between 0 and ${rowLength - 1}"))
       }
     }
 

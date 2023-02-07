@@ -1,12 +1,12 @@
 package fr.coolnerds.minigames.players
 
-import fr.coolnerds.minigames.boards.{Action, Board}
+import fr.coolnerds.minigames.boards.Action
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.engine.ConnectFourConstants.{redPon, yellowPon}
-import fr.coolnerds.minigames.engine.ConnectFourParser.parseFromConsole
-import fr.coolnerds.minigames.engine.{AddPonRed, AddPonYellow, MiniGamesException}
+import fr.coolnerds.minigames.engines.ConnectFourConstants.{redPon, yellowPon}
+import fr.coolnerds.minigames.engines.ConnectFourParser.parseFromConsole
+import fr.coolnerds.minigames.engines.{AddPonRed, AddPonYellow, InGameException, MiniGamesException}
 
-case class BadColor(message: String) extends MiniGamesException
+case class BadColor(message: String) extends InGameException(message)
 
 case class ConsolePlayer[Case](name: String, color: Int) extends Player[Case] {
 

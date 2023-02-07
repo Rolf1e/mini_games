@@ -15,8 +15,3 @@ test-server:
 intellij: 
 	./mill mill.scalalib.GenIdea/idea
 
-# === DOCKER ===
-docker-database:
-    docker compose up -d
-
-docker: docker-database

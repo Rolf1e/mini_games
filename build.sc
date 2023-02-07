@@ -7,6 +7,10 @@ object server extends ScalaModule with ScalafmtModule {
 
   object core extends ScalaModule with ScalafmtModule {
     def scalaVersion = globalScalaVersion
+    override def ivyDeps = Agg(
+      ivy"org.postgresql:postgresql:42.5.1",
+      ivy"com.mchange:c3p0:0.9.5.5"
+    )
   }
 
   object engine_connectfour extends ScalaModule with ScalafmtModule {

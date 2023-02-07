@@ -2,7 +2,7 @@ package fr.coolnerds.minigames.players
 
 import fr.coolnerds.minigames.boards.Action
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.engine.MiniGamesException
+import fr.coolnerds.minigames.engines.MiniGamesException
 
 trait Player[Case] {
 

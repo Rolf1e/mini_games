@@ -1,10 +1,9 @@
-package fr.coolnerds.minigames.boards.connectfour
+package fr.coolnerds.minigames.boards
 
-import fr.coolnerds.minigames.boards._
-import fr.coolnerds.minigames.boards.connectfour.BitBoard.createBitBoardWithLength
+import fr.coolnerds.minigames.boards.BitBoard.createBitBoardWithLength
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.engine.ConnectFourConstants._
-import fr.coolnerds.minigames.engine._
+import fr.coolnerds.minigames.engines.ConnectFourConstants._
+import fr.coolnerds.minigames.engines._
 
 import scala.collection.mutable
 
@@ -27,7 +26,7 @@ case class ConnectFourBoard(
     with BoardOps[Case]
     with Drawable {
 
-  private[connectfour] def copyCases: Seq[Case] = cases.toSeq
+  private[boards] def copyCases: Seq[Case] = cases.toSeq
 
   override def at(coo: Coordinates): Option[Case] = coo match {
     case Point2D(x, y) => Some(cases((rowLength - 1) * y + x))
@@ -48,7 +47,7 @@ case class ConnectFourBoard(
     }
   }
 
-  private[connectfour] def findRowIndex(col: Int): Option[Int] = {
+  private[boards] def findRowIndex(col: Int): Option[Int] = {
     cases.zipWithIndex.view
       .filter { case (_, i) => i % rowLength == col }
       .map(_._1) // We reset the index to have row indexes
@@ -97,7 +96,7 @@ object ConnectFourBoard {
   }
 }
 
-private[connectfour] object BitBoardOps {
+private object BitBoardOps {
 
   def checkHasWin(color: Case)(implicit board: ConnectFourBoard): Boolean = {
     val bitBoard = createBitBoardWithLength(board, color)

@@ -12,6 +12,5 @@ CREATE TABLE games_instances (
     players_id INTEGER[] NOT NULL,
     state JSON NOT NULL,
     instance_id SERIAL NOT NULL,
-    created_at DATE NOT NULL DEFAULT now(),
-    updated_at DATE NOT NULL DEFAULT now()
+    created_at DATE NOT NULL DEFAULT now()
 );
