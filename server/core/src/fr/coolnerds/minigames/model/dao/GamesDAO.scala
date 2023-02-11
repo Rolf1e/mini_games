@@ -1,27 +1,25 @@
 package fr.coolnerds.minigames.model.dao
 
-import com.mchange.v2.c3p0.DataSources
 import fr.coolnerds.minigames.engines.{InAppException, MiniGamesException}
+import fr.coolnerds.minigames.infra.sql._
 import fr.coolnerds.minigames.model.entities.GameEntity
 
 import java.sql.ResultSet
 import java.time.LocalDateTime
-import javax.sql.DataSource
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.language.implicitConversions
 
-class GamesDAO(source: DataSource) {
-
-  def save(game: GameEntity): Unit = ???
+class GamesDAO(pool: ConnectionPool[SimpleConnectionPool.Key]) {
+  implicit private val entityParser: JavaEntityParser[GameEntity] = GameEntityParser
 
   def findByName(name: String): Either[MiniGamesException, GameEntity] = {
-    DAOUtils.executeQuery("SELECT * FROM games")(source, GameEntityParser)
+    val statement = UnPreparedStatement("SELECT * FROM games")
+    pool.acquireConnection.flatMap(_.executeQuery(statement))
   }
 
 }
 
-private object GameEntityParser extends EntityParser[GameEntity] {
+private object GameEntityParser extends JavaEntityParser[GameEntity] {
 
   implicit override def toEntity(
       result: ResultSet
@@ -53,18 +51,20 @@ private object GameEntityParser extends EntityParser[GameEntity] {
 
 object GamesDAO extends App {
 
-  def apply(source: DataSource): GamesDAO = new GamesDAO(source)
+  def apply(pool: ConnectionPool[Int]): GamesDAO = new GamesDAO(pool)
 
-  val url = "jdbc:postgresql://localhost:5432/default_database"
-
-  val unpooled = DataSources.unpooledDataSource(url, "username", "password")
-
-  implicit val source = DataSources.pooledDataSource(
-    unpooled,
-    Map("maxStatements" -> "200", "maxPoolSize" -> 50).asJava
+  val infos = ConnectionInfos(
+    "postgresql",
+    "localhost",
+    5432,
+    "default_database",
+    "username",
+    "password"
   )
 
-  GamesDAO(source)
+  val pool = SimpleConnectionPool(infos)
+
+  GamesDAO(pool)
     .findByName("") match {
     case Left(e)     => println(s"Left ${e}")
     case Right(game) => println(s"Right ${game}")
