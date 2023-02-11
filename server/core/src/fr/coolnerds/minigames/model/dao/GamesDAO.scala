@@ -9,15 +9,34 @@ import java.time.LocalDateTime
 import scala.collection.mutable
 import scala.language.implicitConversions
 
-class GamesDAO(pool: ConnectionPool[SimpleConnectionPool.Key]) {
+class GamesDAO(implicit pool: ConnectionPool[SimpleConnectionPool.Key]) {
   implicit private val entityParser: JavaEntityParser[GameEntity] = GameEntityParser
 
   def findByName(name: String): Either[MiniGamesException, GameEntity] = {
-    val statement = UnPreparedStatement("SELECT * FROM games")
-    pool.acquireConnection.flatMap(_.executeQuery(statement))
+    val statement = PreparedStatement("SELECT * FROM games WHERE name = ?")(prepared => {
+      prepared.setString(1, name)
+      prepared
+    })
+    pool.acquireConnection
+      .flatMap(_.executeQuery(statement))
   }
 
 }
+
+//object GamesDAO extends App {
+//  val infos = ConnectionInfos(
+//    host = "localhost",
+//    port = 5432,
+//    database = "default_database",
+//    username = "username",
+//    password = "password"
+//  )
+//
+//  implicit val pool = SimpleConnectionPool(infos)
+//  new GamesDAO()
+//    .findByName("connect four")
+//    .fold(println(_), println(_))
+//}
 
 private object GameEntityParser extends JavaEntityParser[GameEntity] {
 
@@ -45,29 +64,6 @@ private object GameEntityParser extends JavaEntityParser[GameEntity] {
     } else {
       Left(InAppException("Ambiguous result found, please make a better request."))
     }
-  }
-
-}
-
-object GamesDAO extends App {
-
-  def apply(pool: ConnectionPool[Int]): GamesDAO = new GamesDAO(pool)
-
-  val infos = ConnectionInfos(
-    "postgresql",
-    "localhost",
-    5432,
-    "default_database",
-    "username",
-    "password"
-  )
-
-  val pool = SimpleConnectionPool(infos)
-
-  GamesDAO(pool)
-    .findByName("") match {
-    case Left(e)     => println(s"Left ${e}")
-    case Right(game) => println(s"Right ${game}")
   }
 
 }

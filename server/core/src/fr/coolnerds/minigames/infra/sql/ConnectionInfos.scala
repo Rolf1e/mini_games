@@ -1,7 +1,8 @@
 package fr.coolnerds.minigames.infra.sql
 
 case class ConnectionInfos(
-    engine: String,
+    engine: String = "postgresql",
+    driver: String = "org.postgresql.Driver",
     host: String,
     port: Int,
     database: String,

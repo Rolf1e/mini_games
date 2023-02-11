@@ -37,7 +37,12 @@ class SimpleConnectionPool private (
     connections.get(freshConnection.identifier)
   }
 
-  override def freeConnection(key: Key): Either[MiniGamesException, Unit] = ???
+  override def freeConnection(key: Key): Either[MiniGamesException, Unit] = {
+    connections.asScala.get(key) match {
+      case Some(connection) => Right(connection.used.set(false))
+      case None             => Right(InAppException(s"Connection does not exist with key $key"))
+    }
+  }
 }
 
 object SimpleConnectionPool {
@@ -45,6 +50,7 @@ object SimpleConnectionPool {
   private val maxPoolSize = 10
 
   def apply(connectionInfos: ConnectionInfos): ConnectionPool[Key] = {
+    Class.forName(connectionInfos.driver)
     new SimpleConnectionPool(
       new ConcurrentHashMap[Key, InternalConnection](maxPoolSize),
       new ConnectionFactory(connectionInfos)
@@ -58,7 +64,6 @@ private class ConnectionFactory(connectionInfos: ConnectionInfos) {
   private val connectionsCounter = new AtomicInteger(0)
 
   def newConnection(): PooledConnection[Key] = {
-    Class.forName("org.postgresql.Driver")
     val connection = DriverManager.getConnection(
       s"jdbc:${connectionInfos.engine}://${connectionInfos.host}:${connectionInfos.port}/${connectionInfos.database}",
       connectionInfos.username,
