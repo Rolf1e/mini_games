@@ -1,7 +1,8 @@
 package fr.coolnerds.minigames.infra.sql
 
-import fr.coolnerds.minigames.engines.{InAppException, MiniGamesException}
+import fr.coolnerds.minigames.engines.InAppException
 import fr.coolnerds.minigames.infra.sql.SimpleConnectionPool.{Key, maxPoolSize}
+import fr.coolnerds.minigames.utils.Result
 
 import java.sql.DriverManager
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
@@ -9,8 +10,8 @@ import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
 
 trait ConnectionPool[K] {
-  def acquireConnection: Either[MiniGamesException, PooledConnection[K]]
-  def freeConnection(key: K): Either[MiniGamesException, Unit]
+  def acquireConnection: Result[PooledConnection[K]]
+  def freeConnection(key: K): Result[Unit]
 }
 
 class SimpleConnectionPool private (
@@ -18,7 +19,7 @@ class SimpleConnectionPool private (
     factory: ConnectionFactory
 ) extends ConnectionPool[Key] {
 
-  override def acquireConnection: Either[MiniGamesException, PooledConnection[Key]] = {
+  override def acquireConnection: Result[PooledConnection[Key]] = {
     if (connections.isEmpty) {
       Right(createAndSaveConnection.connection)
     } else if (connections.size() < maxPoolSize) {
@@ -37,7 +38,7 @@ class SimpleConnectionPool private (
     connections.get(freshConnection.identifier)
   }
 
-  override def freeConnection(key: Key): Either[MiniGamesException, Unit] = {
+  override def freeConnection(key: Key): Result[Unit] = {
     connections.asScala.get(key) match {
       case Some(connection) => Right(connection.used.set(false))
       case None             => Right(InAppException(s"Connection does not exist with key $key"))

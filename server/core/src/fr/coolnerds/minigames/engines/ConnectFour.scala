@@ -87,10 +87,18 @@ case class AddPonYellow(col: Int) extends ConnectFourAction
 case class AddPonRed(col: Int) extends ConnectFourAction
 
 sealed trait ConnectFourState extends State
-case class YellowTurn(board: InternalBoard) extends ConnectFourState
-case class RedTurn(board: InternalBoard) extends ConnectFourState
-case class Won(color: Int) extends ConnectFourState
-class Draw private () extends ConnectFourState
+case class YellowTurn(board: InternalBoard) extends ConnectFourState {
+  implicit override def toJson: String = "turn-yellow"
+}
+case class RedTurn(board: InternalBoard) extends ConnectFourState {
+  implicit override def toJson: String = "turn-red"
+}
+case class Won(color: Int) extends ConnectFourState {
+  implicit override def toJson: String = s"won-$color"
+}
+class Draw private () extends ConnectFourState {
+  implicit override def toJson: String = "draw"
+}
 object Draw {
   def apply(): Draw = new Draw()
 }

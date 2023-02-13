@@ -9,8 +9,10 @@ CREATE TABLE games (
 
 CREATE TABLE games_instances (
     id SERIAL PRIMARY KEY,
-    players_id INTEGER[] NOT NULL,
+    game_id INTEGER NOT NULL,
+    players_id VARCHAR NOT NULL,
     state JSON NOT NULL,
     instance_id SERIAL NOT NULL,
     created_at DATE NOT NULL DEFAULT now()
+    CONSTRAINT fk_game FOREIGN KEY (game_id) REFERENCES games (id)
 );

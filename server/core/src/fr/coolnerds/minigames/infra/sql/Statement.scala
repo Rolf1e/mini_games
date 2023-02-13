@@ -1,6 +1,7 @@
 package fr.coolnerds.minigames.infra.sql
 
-import fr.coolnerds.minigames.engines.{ExternalComponentException, MiniGamesException}
+import fr.coolnerds.minigames.engines.ExternalComponentException
+import fr.coolnerds.minigames.utils.Result
 
 import java.sql.{Connection, SQLException}
 import scala.util.{Failure, Success, Using}
@@ -8,13 +9,13 @@ import scala.util.{Failure, Success, Using}
 sealed trait Statement {
   def execute[E](connection: Connection)(
       implicit entityParser: JavaEntityParser[E]
-  ): Either[MiniGamesException, E]
+  ): Result[E]
 }
 
 case class UnPreparedStatement(sql: String) extends Statement {
   def execute[E](
       connection: Connection
-  )(implicit entityParser: JavaEntityParser[E]): Either[MiniGamesException, E] = {
+  )(implicit entityParser: JavaEntityParser[E]): Result[E] = {
     Using.Manager { use =>
       val statement = use(connection.createStatement())
       val result = use(statement.executeQuery(sql))
@@ -36,7 +37,7 @@ case class PreparedStatement(sql: String)(
 ) extends Statement {
   override def execute[E](connection: Connection)(
       implicit entityParser: JavaEntityParser[E]
-  ): Either[MiniGamesException, E] = {
+  ): Result[E] = {
     Using.Manager { use =>
       val statement = use(connection.prepareStatement(sql))
       val result = use(preparation(statement).executeQuery())

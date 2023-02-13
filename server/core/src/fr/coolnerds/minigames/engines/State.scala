@@ -1,4 +1,7 @@
 package fr.coolnerds.minigames.engines
 
-trait State {
+trait State extends StatePersistenceOps {}
+
+trait StatePersistenceOps {
+  implicit def toJson: String
 }

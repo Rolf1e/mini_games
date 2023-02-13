@@ -1,48 +1,43 @@
 package fr.coolnerds.minigames.model.dao
 
-import fr.coolnerds.minigames.engines.{InAppException, MiniGamesException}
+import fr.coolnerds.minigames.engines.InAppException
+import fr.coolnerds.minigames.infra.sql.SimpleConnectionPool.Key
 import fr.coolnerds.minigames.infra.sql._
+import fr.coolnerds.minigames.model.dao.GamesDAO.table
 import fr.coolnerds.minigames.model.entities.GameEntity
+import fr.coolnerds.minigames.utils.Result
 
 import java.sql.ResultSet
 import java.time.LocalDateTime
 import scala.collection.mutable
-import scala.language.implicitConversions
+import scala.language.{implicitConversions, postfixOps}
 
-class GamesDAO(implicit pool: ConnectionPool[SimpleConnectionPool.Key]) {
+class GamesDAO private (_pool: ConnectionPool[Key]) extends AbstractDAO[Key] {
   implicit private val entityParser: JavaEntityParser[GameEntity] = GameEntityParser
 
-  def findByName(name: String): Either[MiniGamesException, GameEntity] = {
-    val statement = PreparedStatement("SELECT * FROM games WHERE name = ?")(prepared => {
+  def findByName(name: String): Result[GameEntity] = {
+    val statement = PreparedStatement(s"SELECT * FROM $table WHERE name = ?")(prepared => {
       prepared.setString(1, name)
       prepared
     })
-    pool.acquireConnection
-      .flatMap(_.executeQuery(statement))
+    executeQuery(statement)
   }
 
+  override def pool: ConnectionPool[Key] = _pool
 }
 
-//object GamesDAO extends App {
-//  val infos = ConnectionInfos(
-//    host = "localhost",
-//    port = 5432,
-//    database = "default_database",
-//    username = "username",
-//    password = "password"
-//  )
-//
-//  implicit val pool = SimpleConnectionPool(infos)
-//  new GamesDAO()
-//    .findByName("connect four")
-//    .fold(println(_), println(_))
-//}
+object GamesDAO {
+  private val table = "games"
+  def apply(implicit pool: ConnectionPool[Key]): GamesDAO = {
+    new GamesDAO(pool)
+  }
+}
 
 private object GameEntityParser extends JavaEntityParser[GameEntity] {
 
   implicit override def toEntity(
       result: ResultSet
-  ): Either[MiniGamesException, GameEntity] = {
+  ): Result[GameEntity] = {
     val game = mutable.Stack[GameEntity]()
     while (result.next()) {
       game.addOne(

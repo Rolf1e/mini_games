@@ -16,6 +16,7 @@ case class GameEntity(
 case class GamesInstancesEntity(
     id: Int,
     players: Seq[Int],
+    gameId: Int,
     state: State,
     instanceId: Long,
     createdAt: LocalDateTime
