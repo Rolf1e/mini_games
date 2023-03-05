@@ -1,4 +1,4 @@
-package fr.coolnerds.minigames.boards
+package fr.coolnerds.minigames.domain
 
 sealed trait Coordinates {}
 

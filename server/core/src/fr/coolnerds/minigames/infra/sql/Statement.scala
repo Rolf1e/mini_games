@@ -1,6 +1,6 @@
 package fr.coolnerds.minigames.infra.sql
 
-import fr.coolnerds.minigames.engines.ExternalComponentException
+import fr.coolnerds.minigames.domain.ExternalComponentException
 import fr.coolnerds.minigames.utils.Result
 
 import java.sql.{Connection, SQLException}

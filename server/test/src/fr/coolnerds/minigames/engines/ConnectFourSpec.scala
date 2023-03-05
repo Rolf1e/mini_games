@@ -1,7 +1,8 @@
 package fr.coolnerds.minigames.engines
 
 import fr.coolnerds.minigames.common.{CheaterPlayer, TestPlayer}
-import fr.coolnerds.minigames.engines.ConnectFourConstants.{Case, redPon, yellowPon}
+import fr.coolnerds.minigames.domain.impl.connectfour.{AddPonRed, AddPonYellow, ConnectFourEngine}
+import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.{Cell, redPon, yellowPon}
 import utest.{TestSuite, Tests, assert, test}
 
 object ConnectFourSpec extends TestSuite {
@@ -9,9 +10,9 @@ object ConnectFourSpec extends TestSuite {
   val tests: Tests = Tests {
 
     test("Build empty board") {
-      val yellow = TestPlayer[Case](Seq.empty)
-      val red = TestPlayer[Case](Seq.empty)
-      val game = ConnectFour(yellow, red)
+      val yellow = TestPlayer[Cell](Seq.empty)
+      val red = TestPlayer[Cell](Seq.empty)
+      val game = ConnectFourEngine(yellow, red)
       val expected = """ |ConnectFour(E: 0 Y: 1 R: 2)
                        ||0|0|0|0|0|0|0|
                        ||0|0|0|0|0|0|0|
@@ -25,9 +26,9 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow plays col 0") {
-      val yellow = TestPlayer[Case](Seq(AddPonYellow(0)), yellowPon)
-      val red = TestPlayer[Case](Seq.empty)
-      val game = ConnectFour(yellow, red)
+      val yellow = TestPlayer[Cell](Seq(AddPonYellow(0)), yellowPon)
+      val red = TestPlayer[Cell](Seq.empty)
+      val game = ConnectFourEngine(yellow, red)
       game.askAndPlayAction()
       val expected = """ |ConnectFour(E: 0 Y: 1 R: 2)
                        ||0|0|0|0|0|0|0|
@@ -42,9 +43,9 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow and Red play") {
-      val yellow = TestPlayer[Case](Seq(AddPonYellow(1)), yellowPon)
-      val red = TestPlayer[Case](Seq(AddPonRed(1)), redPon)
-      val game = ConnectFour(yellow, red)
+      val yellow = TestPlayer[Cell](Seq(AddPonYellow(1)), yellowPon)
+      val red = TestPlayer[Cell](Seq(AddPonRed(1)), redPon)
+      val game = ConnectFourEngine(yellow, red)
       game.askAndPlayAction()
 
       println(game.draw)
@@ -64,9 +65,9 @@ object ConnectFourSpec extends TestSuite {
     }
 
     test("Yellow is a cheater, he is trying to play two times !") {
-      val yellow = CheaterPlayer[Case](Seq(AddPonYellow(0), AddPonYellow(1)), yellowPon)
-      val red = TestPlayer[Case](Seq(), redPon)
-      val game = ConnectFour(yellow, red)
+      val yellow = CheaterPlayer[Cell](Seq(AddPonYellow(0), AddPonYellow(1)), yellowPon)
+      val red = TestPlayer[Cell](Seq(), redPon)
+      val game = ConnectFourEngine(yellow, red)
 
       game.askAndPlayAction()
 

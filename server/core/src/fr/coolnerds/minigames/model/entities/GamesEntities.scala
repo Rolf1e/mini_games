@@ -1,16 +1,15 @@
 package fr.coolnerds.minigames.model.entities
 
-import fr.coolnerds.minigames.engines.State
-
-import java.time.LocalDateTime
+import fr.coolnerds.minigames.domain.State
+import java.time.temporal.Temporal
 
 case class GameEntity(
     id: Int,
     name: String,
     minPlayers: Int,
     maxPlayers: Int,
-    createdAt: LocalDateTime,
-    updatedAt: LocalDateTime
+    createdAt: Temporal,
+    updatedAt: Temporal
 )
 
 case class GamesInstancesEntity(
@@ -19,5 +18,5 @@ case class GamesInstancesEntity(
     gameId: Int,
     state: State,
     instanceId: Long,
-    createdAt: LocalDateTime
+    createdAt: Temporal
 )

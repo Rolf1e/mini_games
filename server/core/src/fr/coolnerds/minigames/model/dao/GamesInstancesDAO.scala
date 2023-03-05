@@ -1,10 +1,15 @@
 package fr.coolnerds.minigames.model.dao
 
+import fr.coolnerds.minigames.domain.{InAppException, State, StateFactory}
 import fr.coolnerds.minigames.infra.sql.SimpleConnectionPool.Key
-import fr.coolnerds.minigames.infra.sql.{ConnectionPool, PreparedStatement}
+import fr.coolnerds.minigames.infra.sql.{ConnectionPool, JavaEntityParser, PreparedStatement}
 import fr.coolnerds.minigames.model.dao.GamesInstancesDAO.table
 import fr.coolnerds.minigames.model.entities.GamesInstancesEntity
 import fr.coolnerds.minigames.utils.Result
+
+import java.sql.ResultSet
+import scala.collection.mutable
+import scala.language.implicitConversions
 
 class GamesInstancesDAO private (_pool: ConnectionPool[Key])
     extends AbstractDAO[Key]
@@ -19,12 +24,12 @@ class GamesInstancesDAO private (_pool: ConnectionPool[Key])
         prepared.setInt(2, instanceId)
         prepared
       })
-    executeQuery(statement)
+    executeQuery(statement)(GamesInstancesEntityParser)
   }
 
   override def save(
       entity: GamesInstancesEntity
-  ): Result[Nothing] = {
+  ): Result[Unit] = {
     val statement = PreparedStatement(
       "INSERT INTO games_instances(players_id, state, instance_id) VALUES (?, ?, ?)"
     )(prepared => {
@@ -39,4 +44,38 @@ class GamesInstancesDAO private (_pool: ConnectionPool[Key])
 
 object GamesInstancesDAO {
   private val table = "games_instances"
+}
+
+private object GamesInstancesEntityParser
+    extends JavaEntityParser[GamesInstancesEntity]
+    with StateFactory {
+
+  implicit override def toState(json: String): State = ???
+
+  implicit override def toEntity(
+      result: ResultSet
+  ): Result[GamesInstancesEntity] = {
+    val game = mutable.Stack[GamesInstancesEntity]()
+    while (result.next()) {
+      game.addOne(
+        GamesInstancesEntity(
+          result.getInt("id"),
+          result.getString("players_id").split(",").map(_.toInt),
+          result.getInt("game_id"),
+          result.getString("state"),
+          result.getLong("instanceId"),
+          result.getDate("created_at").toInstant
+        )
+      )
+    }
+
+    if game.isEmpty then {
+      Left(MiniGamesNotFoundException())
+    } else if 1 == game.length then {
+      Right(game.head)
+    } else {
+      Left(InAppException("Ambiguous result found, please make a better request."))
+    }
+  }
+
 }

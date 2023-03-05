@@ -1,18 +1,18 @@
-import fr.coolnerds.minigames.engines.{ConnectFour, ConnectFourState, Draw, RedTurn, Won, YellowTurn}
-import fr.coolnerds.minigames.engines.ConnectFourConstants._
-import fr.coolnerds.minigames.players.ConsolePlayer
+import fr.coolnerds.minigames.domain.impl.connectfour.{ConnectFourEngine, ConnectFourTurn, Draw, RedTurn, Won, YellowTurn}
+import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants._
+import fr.coolnerds.minigames.domain.players.ConsolePlayer
 
 object Main extends App {
 
-  private val yellow = ConsolePlayer[Case]("Tigran", yellowPon)
-  private val red = ConsolePlayer[Case]("Cassiopee", redPon)
-  private val game = ConnectFour(yellow, red)
+  private val yellow = ConsolePlayer[Cell]("Tigran", yellowPon)
+  private val red = ConsolePlayer[Cell]("Cassiopee", redPon)
+  private val game = ConnectFourEngine(yellow, red)
 
   while (!gameIsOver(game)) {
     game.askAndPlayAction()
   }
 
-  private def gameIsOver(game: ConnectFour): Boolean = game.state match {
+  private def gameIsOver(game: ConnectFourEngine): Boolean = game.state match {
     case YellowTurn(_) | RedTurn(_) => false
     case Won(winner) =>
       println(s"Winner is $winner")

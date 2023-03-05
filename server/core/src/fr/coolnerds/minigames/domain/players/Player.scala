@@ -1,8 +1,7 @@
-package fr.coolnerds.minigames.players
+package fr.coolnerds.minigames.domain.players
 
-import fr.coolnerds.minigames.boards.Action
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.engines.MiniGamesException
+import fr.coolnerds.minigames.domain.{Action, MiniGamesException}
 
 trait Player[Case] {
 

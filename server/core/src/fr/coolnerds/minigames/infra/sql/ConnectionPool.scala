@@ -1,6 +1,6 @@
 package fr.coolnerds.minigames.infra.sql
 
-import fr.coolnerds.minigames.engines.InAppException
+import fr.coolnerds.minigames.domain.InAppException
 import fr.coolnerds.minigames.infra.sql.SimpleConnectionPool.{Key, maxPoolSize}
 import fr.coolnerds.minigames.utils.Result
 
@@ -20,9 +20,9 @@ class SimpleConnectionPool private (
 ) extends ConnectionPool[Key] {
 
   override def acquireConnection: Result[PooledConnection[Key]] = {
-    if (connections.isEmpty) {
+    if connections.isEmpty then {
       Right(createAndSaveConnection.connection)
-    } else if (connections.size() < maxPoolSize) {
+    } else if connections.size() < maxPoolSize then {
       connections.asScala.values
         .find(!_.used.getAndSet(true))
         .map(_.connection)

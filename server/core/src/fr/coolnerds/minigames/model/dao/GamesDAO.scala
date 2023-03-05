@@ -1,6 +1,6 @@
 package fr.coolnerds.minigames.model.dao
 
-import fr.coolnerds.minigames.engines.InAppException
+import fr.coolnerds.minigames.domain.InAppException
 import fr.coolnerds.minigames.infra.sql.SimpleConnectionPool.Key
 import fr.coolnerds.minigames.infra.sql._
 import fr.coolnerds.minigames.model.dao.GamesDAO.table
@@ -52,9 +52,9 @@ private object GameEntityParser extends JavaEntityParser[GameEntity] {
       )
     }
 
-    if (game.isEmpty) {
+    if game.isEmpty then {
       Left(MiniGamesNotFoundException())
-    } else if (1 == game.length) {
+    } else if 1 == game.length then {
       Right(game.head)
     } else {
       Left(InAppException("Ambiguous result found, please make a better request."))

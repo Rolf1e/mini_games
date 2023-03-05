@@ -2,7 +2,7 @@
 import mill._, scalalib._, scalafmt._
 
 object server extends ScalaModule with ScalafmtModule {
-  val globalScalaVersion = "2.13.8"
+  val globalScalaVersion = "3.2.1"
   def scalaVersion = globalScalaVersion
 
   object core extends ScalaModule with ScalafmtModule {
