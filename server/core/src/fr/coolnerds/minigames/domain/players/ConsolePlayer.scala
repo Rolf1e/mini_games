@@ -1,10 +1,9 @@
 package fr.coolnerds.minigames.domain.players
 
 import fr.coolnerds.minigames.components.Drawable
-import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException}
-import fr.coolnerds.minigames.domain.impl.connectfour.{AddPonRed, AddPonYellow}
-import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.{redPon, yellowPon}
 import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourParser.parseFromConsole
+import fr.coolnerds.minigames.domain.impl.connectfour.{AddPon, Color}
+import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException}
 
 case class BadColor(message: String) extends InGameException(message)
 
@@ -14,17 +13,16 @@ case class ConsolePlayer[Case](name: String, color: Int) extends Player[Case] {
     println(drawable.draw)
     println("column?")
 
-    for (column <- parseFromConsole[Int])
-      yield {
-        if (yellowPon == color) {
-          return Right(Seq(AddPonYellow(column)))
-        } else if (redPon == color) {
-          return Right(Seq(AddPonRed(column)))
-        } else {
-          return Left(BadColor(s"$color is not legal !"))
-        }
-      }
+    for
+      column <- parseFromConsole[Int]
+      action <- createAction(column, color)
+    yield action
+  }
 
+  private def createAction(column: Int, color: Int): Either[MiniGamesException, Seq[Action]] = {
+    Color.fromCell(color) match
+      case Some(c) => Right(Seq(AddPon(c, column)))
+      case None    => Left(BadColor(s"$color is not legal !"))
   }
 
   override def getColor: Int = color

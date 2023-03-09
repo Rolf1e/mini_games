@@ -10,8 +10,34 @@ import scala.util.{Failure, Properties, Success, Try}
 
 package object connectfour {
 
-  enum Color {
-    case Red, Yellow
+  sealed trait Color {
+    def ponValue: Int
+  }
+
+  object Yellow extends Color {
+    val yellow = 1
+
+    override def ponValue: Cell = yellow
+    override def toString: String = s"$yellow"
+  }
+
+  object Red extends Color {
+    val red = 2
+
+    override def ponValue: Cell = red
+    override def toString: String = s"$red"
+  }
+
+  object Color {
+
+    val emptyCell = 0
+
+    def fromCell(cell: Cell): Option[Color] = {
+      cell match
+        case Red.red       => Some(Red)
+        case Yellow.yellow => Some(Yellow)
+        case _             => None
+    }
   }
 
   object ConnectFourConstants {
@@ -29,14 +55,13 @@ package object connectfour {
   }
 
   sealed trait ConnectFourAction extends Action
-  case class AddPonYellow(col: Int) extends ConnectFourAction
-  case class AddPonRed(col: Int) extends ConnectFourAction
+  case class AddPon(color: Color, column: Int) extends ConnectFourAction
 
   sealed trait ConnectFourTurn extends Turn
   case class YellowTurn(board: InternalBoard) extends ConnectFourTurn {}
   case class RedTurn(board: InternalBoard) extends ConnectFourTurn {}
   case class Won(color: Int) extends ConnectFourTurn {}
-  object Draw extends ConnectFourTurn {}
+  case object Draw extends ConnectFourTurn {}
 
   abstract class ConnectFourException(message: String) extends InGameException(message)
   case class ReadInput(message: String) extends ConnectFourException(message)

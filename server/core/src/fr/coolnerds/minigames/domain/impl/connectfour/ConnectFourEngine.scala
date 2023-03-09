@@ -23,7 +23,8 @@ class ConnectFourEngine(board: InternalBoard, yellow: InternalPlayer, red: Inter
 
   override def state: State = ???
 
-  override def draw: String = ???
+  override def draw: String =
+    s"ConnectFour(E: ${Color.emptyCell} Y: ${yellow.getColor} R: ${red.getColor})\n${board.draw}"
 
   override def save(): Future[State] = ???
 

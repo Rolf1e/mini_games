@@ -4,7 +4,7 @@ import fr.coolnerds.minigames.components.Drawable
 import fr.coolnerds.minigames.domain.{Action, MiniGamesException}
 import fr.coolnerds.minigames.domain.players.Player
 
-case class TestPlayer[Case](actions: Seq[Action], color: Int = 0) extends Player[Case] {
+case class TestPlayer[Case](actions: Seq[Action], color: Int) extends Player[Case] {
 
   override def getColor: Int = color
 
