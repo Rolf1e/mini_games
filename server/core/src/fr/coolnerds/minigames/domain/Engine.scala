@@ -1,17 +1,13 @@
 package fr.coolnerds.minigames.domain
 
+import fr.coolnerds.minigames.utils.Result
+
 import scala.concurrent.Future
 
 trait Engine {
-  def askAndPlayAction(): Unit
+  def askAndPlayAction(): Result[Unit]
 }
 
-trait EngineTurnOps {
-  def turn: Turn
-}
-
-trait EngineStateOps {
-  def state: State
+trait EngineStateOps extends StateOps {
   def save(): Future[State]
 }
-

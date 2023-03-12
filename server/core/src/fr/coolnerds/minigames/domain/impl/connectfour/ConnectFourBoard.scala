@@ -3,15 +3,28 @@ package fr.coolnerds.minigames.domain.impl.connectfour
 import fr.coolnerds.minigames.components.Drawable
 import fr.coolnerds.minigames.domain.*
 import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.*
+import fr.coolnerds.minigames.utils.Result
 
 import scala.collection.mutable
+import scala.util
 
+/**
+  *                      y
+  *                      ˆ|0|2|0|
+  * The following board: ||0|1|2|   rowLength = 3
+  *                       |1|2|1|   columnLength = 3
+  *                           -> x
+  *
+  * is represented by [1, 2, 1, 0, 1, 2, 0, 2, 0]
+  * - We access (1, 2) with cases((rowLength * 1) y + x)
+  * - Find row from a given column
+  */
 case class ConnectFourBoard(
-    cells: Seq[mutable.Stack[Cell]],
+    cells: mutable.ArrayDeque[ConnectFourCell],
     rowLength: Int,
     columnLength: Int
-) extends Board[Cell]
-    with BoardOps[Cell]
+) extends Board[ConnectFourCell]
+    with BoardOps[ConnectFourCell]
     with BoardStateOps
     with Drawable {
 
@@ -20,47 +33,62 @@ case class ConnectFourBoard(
     bitBoard.checkIsWin(Red) && bitBoard.checkIsWin(Yellow)
   }
 
-  override def isFull: Boolean = ???
+  override def isFull: Boolean = !cells.contains(Color.emptyCell)
 
-  override def at(coordinates: Coordinates): Option[Cell] = ???
+  override def play(action: Action): Result[Unit] = {
+    action match {
+      case AddPon(color, column) => playAt(color, column)
+      case _                     => Left(InAppException("Illegal action for connect four game"))
+    }
+  }
 
-  override def play(action: Action): Unit = ???
+  private def playAt(color: Color, col: Int): Result[Unit] = {
+    if !isFull && !isWon then {
+      findRow(col) match {
+        case Some(row) =>
+          cells(row * rowLength + col) = color.ponValue
+          Right(())
+        case None => Left(InAppException(" Player can not play in this column "))
+      }
+    } else Right(())
+  }
 
-  override def state: State = ???
+  private[connectfour] def findRow(col: Int): Option[Int] = {
+    cells.zipWithIndex.view
+      .filter { case (_, i) => i % rowLength == col }
+      .map(_._1)
+      .zipWithIndex
+      .find { case (c, _) => c == 0 }
+      .map(_._2)
+  }
+
+  override def state: State = ConnectFourState(BitBoard.fromBoard(this))
 
   override def draw: String = {
-
-    def drawCell(cell: Cell): String = {
-      Color.fromCell(cell) match
-        case Some(color) => s"$color"
-        case None        => s"${Color.emptyCell}"
+    var map = ""
+    var row = ""
+    for ((cell, i) <- cells.zipWithIndex.reverse) {
+      if (i % rowLength == 0) {
+        map += s"|${drawCell(cell)}|${row}$lineSeparator"
+        row = ""
+      } else { row = s"${drawCell(cell)}|" + row }
     }
-
-    val a = getCellsAsSeq.reverse.view.zipWithIndex
-      .map { case (cell, i) => (drawCell(cell), i) }
-
-    a.foldLeft("") { case (board, (cell, i)) =>
-      val drawn =
-        if i % rowLength == 0 then s"|$cell|"
-        else if i % rowLength == rowLength - 1 then s"$cell|$lineSeparator"
-        else s"$cell|"
-      board ++ drawn
-    }
+    map
   }
 
-  private[connectfour] def getCellsAsSeq: Seq[Cell] = {
-    for {
-      rowIndex <- 0 until rowLength
-      columnIndex <- 0 until columnLength
-    } yield cells(rowIndex)(columnIndex)
+  private def drawCell(cell: ConnectFourCell): String = {
+    Color.fromCell(cell) match
+      case Some(color) => s"$color"
+      case None        => s"${Color.emptyCell}"
   }
+
 }
 
 object ConnectFourBoard {
 
   def emptyBoard(): ConnectFourBoard = {
     ConnectFourBoard(
-      Seq.fill(rowLength)(mutable.Stack.fill(columnLength)(Color.emptyCell)),
+      mutable.ArrayDeque.fill(rowLength * columnLength)(0),
       rowLength,
       columnLength
     )
@@ -80,9 +108,10 @@ case class ConnectFourState(bitBoard: BitBoard) extends State {
 }
 
 // https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
-private case class BitBoard(reds: Long, yellows: Long, lastIndex: Int) extends BoardFactory[Cell] {
+private case class BitBoard(reds: Long, yellows: Long, lastIndex: Int)
+    extends BoardFactory[ConnectFourCell] {
 
-  override def toBoard: Either[MiniGamesException, Board[Cell]] = ???
+  override def toBoard: Result[Board[ConnectFourCell]] = ???
 
   def checkIsWin(color: Color): Boolean = color match {
     case Red    => checkIsWin(reds, lastIndex)
@@ -105,18 +134,16 @@ private case class BitBoard(reds: Long, yellows: Long, lastIndex: Int) extends B
 
 private object BitBoard {
 
-  def fromInt(board: Long): BitBoard = ???
-
   def fromBoard(board: ConnectFourBoard): BitBoard = {
-    val cases = board.getCellsAsSeq
+    val cells = board.cells.toSeq
     BitBoard(
-      toBitBoard(cases, Red),
-      toBitBoard(cases, Yellow),
-      cases.length
+      toBitBoard(cells, Red),
+      toBitBoard(cells, Yellow),
+      cells.length
     )
   }
 
-  private def toBitBoard(cases: Seq[Cell], color: Color): Long = {
+  private def toBitBoard(cases: Seq[ConnectFourCell], color: Color): Long = {
     var bitBoard: Long = 0
     for ((cell, i) <- cases.zipWithIndex) {
       if (Color.emptyCell == cell) {

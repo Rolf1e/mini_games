@@ -1,9 +1,12 @@
 package fr.coolnerds.minigames.domain.impl
 
 import fr.coolnerds.minigames.components.InputParser
-import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.{Cell, rowLength}
+import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.{
+  ConnectFourCell,
+  rowLength
+}
 import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourEngine.InternalBoard
-import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException, Turn}
+import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException}
 
 import scala.io.StdIn.readLine
 import scala.util.{Failure, Properties, Success, Try}
@@ -17,14 +20,14 @@ package object connectfour {
   object Yellow extends Color {
     val yellow = 1
 
-    override def ponValue: Cell = yellow
+    override def ponValue: ConnectFourCell = yellow
     override def toString: String = s"$yellow"
   }
 
   object Red extends Color {
     val red = 2
 
-    override def ponValue: Cell = red
+    override def ponValue: ConnectFourCell = red
     override def toString: String = s"$red"
   }
 
@@ -32,7 +35,7 @@ package object connectfour {
 
     val emptyCell = 0
 
-    def fromCell(cell: Cell): Option[Color] = {
+    def fromCell(cell: ConnectFourCell): Option[Color] = {
       cell match
         case Red.red       => Some(Red)
         case Yellow.yellow => Some(Yellow)
@@ -41,27 +44,16 @@ package object connectfour {
   }
 
   object ConnectFourConstants {
-    type Cell = Int
-
-    val yellowPon = 1
-    val redPon = 2
+    type ConnectFourCell = Int
 
     val rowLength = 7
     val columnLength = 6
-
-    val emptyCell = 0
 
     val lineSeparator: String = Properties.lineSeparator
   }
 
   sealed trait ConnectFourAction extends Action
   case class AddPon(color: Color, column: Int) extends ConnectFourAction
-
-  sealed trait ConnectFourTurn extends Turn
-  case class YellowTurn(board: InternalBoard) extends ConnectFourTurn {}
-  case class RedTurn(board: InternalBoard) extends ConnectFourTurn {}
-  case class Won(color: Int) extends ConnectFourTurn {}
-  case object Draw extends ConnectFourTurn {}
 
   abstract class ConnectFourException(message: String) extends InGameException(message)
   case class ReadInput(message: String) extends ConnectFourException(message)
@@ -81,9 +73,9 @@ package object connectfour {
       }
     }
 
-    implicit object ColumnParser extends ConnectFourParser[Cell] {
+    implicit object ColumnParser extends ConnectFourParser[ConnectFourCell] {
 
-      override def parse(input: String): Either[MiniGamesException, Cell] = {
+      override def parse(input: String): Either[MiniGamesException, ConnectFourCell] = {
         Try(input.toInt) match {
           case Failure(e) =>
             e match {

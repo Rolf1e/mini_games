@@ -4,8 +4,8 @@ import fr.coolnerds.minigames.domain.players.ConsolePlayer
 
 object Main extends App {
 
-  private val yellow = ConsolePlayer[Cell]("Tigran", Yellow.ponValue)
-  private val red = ConsolePlayer[Cell]("Cassiopee", Red.ponValue)
+  private val yellow = ConsolePlayer[ConnectFourCell]("Tigran", Yellow.ponValue)
+  private val red = ConsolePlayer[ConnectFourCell]("Cassiopee", Red.ponValue)
   private val game = ConnectFourEngine(yellow, red)
 
   while (!gameIsOver(game)) {

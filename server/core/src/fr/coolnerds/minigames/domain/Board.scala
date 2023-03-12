@@ -1,21 +1,19 @@
 package fr.coolnerds.minigames.domain
 
-trait Board[Cell] {
+import fr.coolnerds.minigames.utils.Result
+
+trait Board[Cell] {}
+
+trait BoardStateOps extends StateOps {
   def isWon: Boolean
 
   def isFull: Boolean
 }
 
-trait BoardStateOps {
-  def state: State
-}
-
 trait BoardOps[Cell] {
-  def at(coordinates: Coordinates): Option[Cell]
-
-  def play(action: Action): Unit
+  def play(action: Action): Result[Unit]
 }
 
 trait BoardFactory[Cell] {
-  def toBoard: Either[MiniGamesException, Board[Cell]]
+  def toBoard: Result[Board[Cell]]
 }
