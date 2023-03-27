@@ -17,12 +17,13 @@ import scala.util.{Failure, Properties, Success, Try}
 
 class ConnectFourEngine(board: InternalBoard, yellow: InternalPlayer, red: InternalPlayer)
     extends Engine
-    with EngineStateOps
+    with StateOps
     with Drawable {
 
   private val playersOrder = mutable.Queue[InternalPlayer](yellow, red)
 
   override def askAndPlayAction(): Result[Unit] = {
+    if isOver then return Left(InGameException("Game is over !"))
     val currentPlayer = playersOrder.dequeue()
 
     val action = currentPlayer.askAction(this) match {
@@ -30,7 +31,7 @@ class ConnectFourEngine(board: InternalBoard, yellow: InternalPlayer, red: Inter
       case Left(ex)                            => return Left(ex)
       case _ =>
         return Left(
-          InAppException(
+          InGameException(
             s"${currentPlayer.getColor} is a cheater ! He tries to plays more than one action !"
           )
         )
@@ -45,8 +46,7 @@ class ConnectFourEngine(board: InternalBoard, yellow: InternalPlayer, red: Inter
   override def draw: String =
     s"ConnectFour(E: ${Color.emptyCell} Y: ${yellow.getColor} R: ${red.getColor})\n${board.draw}"
 
-  override def save(): Future[State] = ???
-
+  override def isOver: Boolean = board.isFull || board.isWon
 }
 
 object ConnectFourEngine {

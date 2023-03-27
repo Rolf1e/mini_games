@@ -2,7 +2,7 @@ package fr.coolnerds.minigames
 
 package object domain {
 
-  trait MiniGamesException extends Exception
+  sealed trait MiniGamesException extends Exception
 
   class InGameException(message: String) extends Exception(message) with MiniGamesException
 

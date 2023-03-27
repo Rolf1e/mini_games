@@ -3,9 +3,7 @@ package fr.coolnerds.minigames.domain.players
 import fr.coolnerds.minigames.components.Drawable
 import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourParser.parseFromConsole
 import fr.coolnerds.minigames.domain.impl.connectfour.{AddPon, Color}
-import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException}
-
-case class BadColor(message: String) extends InGameException(message)
+import fr.coolnerds.minigames.domain.{Action, InAppException, InGameException, MiniGamesException}
 
 case class ConsolePlayer[Case](name: String, color: Int) extends Player[Case] {
 
@@ -22,7 +20,7 @@ case class ConsolePlayer[Case](name: String, color: Int) extends Player[Case] {
   private def createAction(column: Int, color: Int): Either[MiniGamesException, Seq[Action]] = {
     Color.fromCell(color) match
       case Some(c) => Right(Seq(AddPon(c, column)))
-      case None    => Left(BadColor(s"$color is not legal !"))
+      case None    => Left(InAppException(s"$color is not legal !"))
   }
 
   override def getColor: Int = color

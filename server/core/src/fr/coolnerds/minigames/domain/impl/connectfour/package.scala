@@ -6,7 +6,14 @@ import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourConstants.{
   rowLength
 }
 import fr.coolnerds.minigames.domain.impl.connectfour.ConnectFourEngine.InternalBoard
-import fr.coolnerds.minigames.domain.{Action, InGameException, MiniGamesException}
+import fr.coolnerds.minigames.domain.{
+  Action,
+  ExternalComponentException,
+  InAppException,
+  InGameException,
+  MiniGamesException,
+  State
+}
 
 import scala.io.StdIn.readLine
 import scala.util.{Failure, Properties, Success, Try}
@@ -43,6 +50,25 @@ package object connectfour {
     }
   }
 
+  enum Status(val json: String) {
+    case InProgress extends Status("IN PROGRESS")
+    case YellowWinner extends Status("WINNER YELLOW")
+    case RedWinner extends Status("WINNER RED")
+    case Draw extends Status("DRAW")
+  }
+
+  case class ConnectFourState(reds: Long, yellows: Long, status: Status) extends State {
+    implicit override def toJson: String = {
+      s"""
+         |{
+         |  "reds": $reds,
+         |  "yellows": $yellows,
+         |  "status": "${status.json}"
+         |}
+         |""".stripMargin
+    }
+  }
+
   object ConnectFourConstants {
     type ConnectFourCell = Int
 
@@ -55,11 +81,6 @@ package object connectfour {
   sealed trait ConnectFourAction extends Action
   case class AddPon(color: Color, column: Int) extends ConnectFourAction
 
-  abstract class ConnectFourException(message: String) extends InGameException(message)
-  case class ReadInput(message: String) extends ConnectFourException(message)
-  case class NaN(message: String) extends ConnectFourException(message)
-  case class BadColumnIndex(message: String) extends ConnectFourException(message)
-
   trait ConnectFourParser[T] extends InputParser[T]
 
   object ConnectFourParser {
@@ -68,7 +89,7 @@ package object connectfour {
         implicit parser: ConnectFourParser[T]
     ): Either[MiniGamesException, T] = {
       Try(readLine()) match {
-        case Failure(exception) => Left(ReadInput(exception.getMessage))
+        case Failure(exception) => Left(ExternalComponentException(exception))
         case Success(input)     => parser.parse(input)
       }
     }
@@ -79,11 +100,11 @@ package object connectfour {
         Try(input.toInt) match {
           case Failure(e) =>
             e match {
-              case _: NumberFormatException => Left(NaN(input))
+              case _: NumberFormatException => Left(InAppException(input))
             }
           case Success(column) =>
             if (column >= 0 && column < rowLength) Right(column)
-            else Left(BadColumnIndex(s"Column must be between 0 and ${rowLength - 1}"))
+            else Left(InAppException(s"Column must be between 0 and ${rowLength - 1}"))
         }
       }
 

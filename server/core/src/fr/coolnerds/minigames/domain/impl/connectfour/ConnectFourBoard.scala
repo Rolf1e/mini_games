@@ -28,9 +28,11 @@ case class ConnectFourBoard(
     with BoardStateOps
     with Drawable {
 
+  private var bitBoard = BitBoard.fromBoard(this)
+
   override def isWon: Boolean = {
-    val bitBoard = BitBoard.fromBoard(this)
-    bitBoard.checkIsWin(Red) && bitBoard.checkIsWin(Yellow)
+    println(s"isWon yellow:${bitBoard.checkIsWin(Yellow)} red:${bitBoard.checkIsWin(Red)} ")
+    bitBoard.checkIsWin(Yellow) || bitBoard.checkIsWin(Red)
   }
 
   override def isFull: Boolean = !cells.contains(Color.emptyCell)
@@ -38,8 +40,12 @@ case class ConnectFourBoard(
   override def play(action: Action): Result[Unit] = {
     action match {
       case AddPon(color, column) => playAt(color, column)
-      case _                     => Left(InAppException("Illegal action for connect four game"))
+      case _                     => Left(InGameException("Illegal action for connect four game"))
     }
+  }
+
+  private def updateBitBoard(): Unit = {
+    bitBoard = BitBoard.fromBoard(this)
   }
 
   private def playAt(color: Color, col: Int): Result[Unit] = {
@@ -47,8 +53,9 @@ case class ConnectFourBoard(
       findRow(col) match {
         case Some(row) =>
           cells(row * rowLength + col) = color.ponValue
+          updateBitBoard()
           Right(())
-        case None => Left(InAppException(" Player can not play in this column "))
+        case None => Left(InGameException(" Player can not play in this column "))
       }
     } else Right(())
   }
@@ -62,7 +69,14 @@ case class ConnectFourBoard(
       .map(_._2)
   }
 
-  override def state: State = ConnectFourState(BitBoard.fromBoard(this))
+  override def state: State = {
+    val status =
+      if bitBoard.checkIsWin(Yellow) then Status.YellowWinner
+      else if bitBoard.checkIsWin(Red) then Status.RedWinner
+      else if isFull then Status.Draw
+      else Status.InProgress
+    ConnectFourState(bitBoard.reds, bitBoard.yellows, status)
+  }
 
   override def draw: String = {
     var map = ""
@@ -96,17 +110,6 @@ object ConnectFourBoard {
 
 }
 
-case class ConnectFourState(bitBoard: BitBoard) extends State {
-  implicit override def toJson: String = {
-    s"""
-       |{
-       |  "reds": ${bitBoard.reds},
-       |  "yellows": ${bitBoard.yellows},
-       |}
-       |""".stripMargin
-  }
-}
-
 // https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
 private case class BitBoard(reds: Long, yellows: Long, lastIndex: Int)
     extends BoardFactory[ConnectFourCell] {
@@ -118,11 +121,11 @@ private case class BitBoard(reds: Long, yellows: Long, lastIndex: Int)
     case Yellow => checkIsWin(yellows, lastIndex)
   }
 
-  private def checkIsWin(board: Long, width: Int): Boolean = {
-    var bitboard: Long = 0
+  private def checkIsWin(bitBoard: Long, width: Int): Boolean = {
+    var bb: Long = 0
     for direction <- directions(width) do {
-      bitboard = board & (board >> direction)
-      if (bitboard & (bitboard >> (2 * direction))) != 0 then return true
+      bb = bitBoard & (bitBoard >> direction)
+      if (bb & (bb >> (2 * direction))) != 0 then return true
     }
     false
   }
@@ -145,10 +148,10 @@ private object BitBoard {
 
   private def toBitBoard(cases: Seq[ConnectFourCell], color: Color): Long = {
     var bitBoard: Long = 0
-    for ((cell, i) <- cases.zipWithIndex) {
-      if (Color.emptyCell == cell) {
+    for (cell, i) <- cases.zipWithIndex do {
+      if Color.emptyCell == cell then {
         bitBoard ^= 0 << i
-      } else if (color.ponValue == cell) {
+      } else if color.ponValue == cell then {
         bitBoard ^= 1 << i
       } else {
         bitBoard ^= 0 << i

@@ -53,7 +53,7 @@ private object GameEntityParser extends JavaEntityParser[GameEntity] {
     }
 
     if game.isEmpty then {
-      Left(MiniGamesNotFoundException())
+      Left(InAppException("Failed to find resource"))
     } else if 1 == game.length then {
       Right(game.head)
     } else {

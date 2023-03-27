@@ -8,18 +8,10 @@ object Main extends App {
   private val red = ConsolePlayer[ConnectFourCell]("Cassiopee", Red.ponValue)
   private val game = ConnectFourEngine(yellow, red)
 
-  while (!gameIsOver(game)) {
+  while !game.isOver do {
     game.askAndPlayAction()
+    println(s"State: ${game.state.toJson}")
   }
-
-  private def gameIsOver(game: ConnectFourEngine): Boolean = game.state match {
-    case YellowTurn(_) | RedTurn(_) => false
-    case Won(winner) =>
-      println(s"Winner is $winner")
-      true
-    case Draw =>
-      println("It is a draw !")
-      true
-  }
+  println(s"Game is over, ${game.state}")
 
 }
