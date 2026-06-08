@@ -1,5 +1,7 @@
 package fr.rolfie.minigames.games.domain.arrowwordpuzzle;
 
+import fr.rolfie.minigames.games.domain.arrowwordpuzzle.generators.RandomGenerator;
+import fr.rolfie.minigames.games.domain.arrowwordpuzzle.generators.csp.CspGenerator;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -38,7 +40,7 @@ public class ArrowWordPuzzleGame {
     private static class Factory {
 
         static ArrowWordPuzzleGame generate(List<DefinitionBO> dictionary, int width, int height) {
-            return new RandomGenerator(width, height).generate(dictionary);
+            return new CspGenerator().generate(dictionary);
         }
     }
 
